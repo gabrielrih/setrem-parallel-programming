@@ -4,3 +4,8 @@
 ```sh
 g++ -o3 file.cpp -o output -pthread
 ```
+
+## running it
+```sh
+./output
+```

@@ -3,11 +3,11 @@
 We are basically deploying a cluster of workstations to run and test parallel code.
 
 ## Stack:
-- Oracle Virtual Box
-- Network: Host-Only Adapter and NAT.
-- Ubuntu Server 22.04.3
-- NFS
-- OpenMPI
+- [Oracle Virtual Box](https://www.virtualbox.org/)
+- [Network: Host-Only Adapter and NAT](https://download.virtualbox.org/virtualbox/7.0.14/UserManual.pdf)
+- [Ubuntu Server 22.04.3](https://ubuntu.com/download/server)
+- [NFS](https://en.wikipedia.org/wiki/Network_File_System)
+- [OpenMPI](https://github.com/open-mpi/ompi)
 
 ## Architecture:
 
@@ -173,4 +173,23 @@ sudo mount -a
 To check if it worked just run the command below. You should be able to see the _/home/mpihpc/shared_ folder.
 ```sh
 df -h
+```
+
+### OpenMPI
+
+
+__On the primary__, we must install the OpenMPI library.
+```sh
+sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
+```
+
+... and must create a _.cluster_hostfile_ to be used by OpenMPI.
+```sh
+su - mpihpc
+cat <<EOT >> /home/mpihpc/.cluster_hostfile
+primary
+secondary1
+secondary2
+secondary3
+EOT
 ```

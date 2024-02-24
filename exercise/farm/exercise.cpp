@@ -64,7 +64,7 @@ int main(int argc, char *argv []){
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             int message = 2;  // any message, just for testing
             std::cout << "I am the emitter, sending to the worker " << worker_rank << " this message: " << message << std::endl;
-            MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);
+            //MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
@@ -78,10 +78,11 @@ int main(int argc, char *argv []){
     }
     else { // Run on workers, send message to collector
         std::cout << "I am the worker " << myrank << std::endl;
-        MPI_Status status;
-        int message = 0;
-        MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
-        std::cout << "I am the worker " << myrank << ", receiving this message: " << message << std::endl;
+        //MPI_Status status;
+        //int message = 0;
+        //MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
+        //std::cout << "I am the worker " << myrank << ", receiving this message: " << message << std::endl;
+        
         // Do the work
         //int final_message = message * 10;
         // Sending message to the collector

@@ -177,11 +177,13 @@ df -h
 
 ### OpenMPI
 
-__On the primary__, we must install the OpenMPI library.
+__In all machines__, we must install the OpenMPI library.
 ```sh
 sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
 ```
 
+
+__On the primary__, we must install the OpenMPI library.
 ... and must create a _.cluster_hostfile_ to be used by OpenMPI.
 ```sh
 su - mpihpc
@@ -240,7 +242,7 @@ Running the code in the same machine:
 mpirun -np 3 ./output
 ```
 
-> Note that in this case the _mpirun_ are running the code in three different processes but all of them in the same machine.
+> Note that in this case the _mpirun_ are running the code in three different processes but all of them in the same machine. Another important thing is that each process is created in a differente vCore, so, in the case, the VM must have thre or more vCores.
 
 
 #### Running code to run in multiple machines

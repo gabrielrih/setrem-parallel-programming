@@ -49,7 +49,7 @@ int main(int argc, char *argv []){
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 
     // Validation
-    min_of_processes=sizeof(WORKERS_RANK) + 2;  // emitter, collector and workers
+    int min_of_processes=sizeof(WORKERS_RANK) + 2;  // emitter, collector and workers
     if (numprocs < min_of_processes) {
         throw std::invalid_argument("The quantity of informed processes are to low!");
     }
@@ -70,7 +70,7 @@ int main(int argc, char *argv []){
             std::cout << "I am the collector and I received this message: " << message " from worker " << worker << std::endl;
         }
     }
-    else{ // Run on workers, send message to collector
+    else { // Run on workers, send message to collector
         MPI_Status status;
         int message=0;
         MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);

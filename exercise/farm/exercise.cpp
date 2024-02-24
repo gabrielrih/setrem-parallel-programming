@@ -48,11 +48,6 @@ int main(int argc, char *argv []){
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 
     // Validation, minimum of processes
-    //if (numprocs < MIN_OF_PROCESSES) {
-    //    MPI_Finalize();
-    //    std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
-    //    return 1;
-    //}
     if (numprocs < MIN_OF_PROCESSES) {
         std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
@@ -62,23 +57,25 @@ int main(int argc, char *argv []){
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes: " << numprocs << std::endl;
         std::cout << "Number of workers: " << numprocs - 2 << std::endl;
-        for(int worker = 2; worker < numprocs; worker++) { // send message to each worker
+        // FIX IT
+        // Change it to 2
+        for(int worker = 1; worker < numprocs; worker++) { // send message to each worker
             int message = 2;  // any message, just for testing
             std::cout << "I am the emitter, sending to the worker " << worker << " this message: " << message << std::endl;
             MPI_Send(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD);
         }
     }
-    else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
-        //MPI_Status status;
-        int message = 0;
-        int sum = 0;
-        for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
-            MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
-            sum += message;
-        }
-        std::cout << "I am the collector and the sum of the received values are: " << sum << std::endl;
-    }
+    // else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
+    //     //MPI_Status status;
+    //     int message = 0;
+    //     int sum = 0;
+    //     for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
+    //         MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    //         std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
+    //         sum += message;
+    //     }
+    //     std::cout << "I am the collector and the sum of the received values are: " << sum << std::endl;
+    // }
     else { // Run on workers, send message to collector
         std::cout << "I am the worker " << myrank << std::endl;
 

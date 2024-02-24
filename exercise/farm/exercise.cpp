@@ -44,9 +44,9 @@ const int MESSAGE_TAG=0;
 int main(int argc, char *argv []){
     int myrank, //who am i
     numprocs; //how many process
-    MPI_Init(&argc,&argv);
-    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
-    MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 
     // Validation, minimum of processes
     int min_of_processes=WORKERS_QUANTITY + 2;  // the plus two refers to the emitter and the collector
@@ -77,6 +77,7 @@ int main(int argc, char *argv []){
         std::cout << "I am the collector!" << std::endl;
     }
     else { // Run on workers, send message to collector
+        std::cout << "I am the worker " << myrank << std::endl;
         MPI_Status status;
         int message = 0;
         MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);

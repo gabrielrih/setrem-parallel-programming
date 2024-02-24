@@ -34,8 +34,12 @@
 #include <iostream>
 #include <mpi.h>
 
+// Farm pattern: ranks
+const int EMMITER_RANK = 0;
+const int COLLECTOR_RANK = 1;
+const int WORKERS_RANK[] = {2, 3};
+
 const int MESSAGE_TAG=0;
-const int MASTER_RANK=0;
 
 int main(int argc, char *argv []){
     int myrank, //who am i
@@ -43,17 +47,39 @@ int main(int argc, char *argv []){
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-    if (myrank == MASTER_RANK) {
+
+    // Validation
+    min_of_processes=sizeof(WORKERS_RANK) + 2;  // emitter, collector and workers
+    if (numprocs < min_of_processes) {
+        throw std::invalid_argument("The quantity of informed processes are to low!");
+    }
+
+    // Create the workers rank
+    if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes " << numprocs << std::endl;
-       for(int source = 1; source < numprocs; source++){
-            MPI_Send(&source, 1, MPI_INT, source, MESSAGE_TAG, MPI_COMM_WORLD);
-            std::cout << "I am the Master, sending to " << source << " this integer: " << source << std::endl;
+        //for(int source = 1; source < (numprocs - 1); source++){
+        for(auto worker: WORKERS_RANK) {  // send message for each work
+            int message = 2;  // any message, just for testing
+            MPI_Send(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD);
+            std::cout << "I am the emitter, sending to the worker " << worker << " this message: " << message << std::endl;
         }
-    }else{
+    }
+    elif (myrank == COLLECTOR_RANK) { // Run on collector, it's done
+        for(auto worker: WORKERS_RANK) {  // receive message from every single worker
+            MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
+            std::cout << "I am the collector and I received this message: " << message " from worker " << worker << std::endl;
+        }
+    }
+    else{ // Run on workers, send message to collector
         MPI_Status status;
         int message=0;
-        MPI_Recv(&message, 1, MPI_INT, MASTER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status );
-        std::cout << "I am the Slave " << myrank << " Receiving this integer: " << message << std::endl;
+        MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
+        std::cout << "I am the worker " << myrank << ", receiving this message: " << message << std::endl;
+        // Do the work
+        int final_message = message * 10
+        // Sending message to the collector
+        MPI_Send(&final_message, 1, MPI_INT, COLLECTOR_RANK, MESSAGE_TAG, MPI_COMM_WORLD);
+        std::cout << "I am the worker " << myrank << " and the message was sent to the collector" << std::endl;
     }
     MPI_Finalize();
     return 0;

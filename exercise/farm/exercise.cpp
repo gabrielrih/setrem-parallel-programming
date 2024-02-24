@@ -49,10 +49,10 @@ int main(int argc, char *argv []){
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 
     // Validation
-    int min_of_processes=sizeof(WORKERS_RANK) + 2;  // emitter, collector and workers
-    if (numprocs < min_of_processes) {
-        throw std::invalid_argument("The quantity of informed processes are to low!");
-    }
+    //int min_of_processes=sizeof(WORKERS_RANK) + 2;  // emitter, collector and workers
+    //if (numprocs < min_of_processes) {
+    //    throw std::invalid_argument("The quantity of informed processes are to low!");
+    //}
 
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers

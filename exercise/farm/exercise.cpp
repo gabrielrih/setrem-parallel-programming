@@ -75,7 +75,7 @@ int main(int argc, char *argv []){
         for(int worker = 0; worker < workers_quantity; worker++) { // receive message from each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             //MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
-            std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
+            std::cout << "I am the collector and I received from worker " << worker_rank << " this message: " << message << std::endl;
         }
         //std::cout << "I am the collector!" << std::endl;
     }

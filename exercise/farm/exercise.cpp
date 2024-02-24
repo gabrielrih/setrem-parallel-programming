@@ -71,7 +71,7 @@ int main(int argc, char *argv []){
         for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
             std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
-            sum += message
+            sum += message;
         }
         std::cout << "I am the collector and the sum of the received values are: " << sum << std::endl;
     }

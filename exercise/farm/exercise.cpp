@@ -44,7 +44,7 @@ int main(int argc, char *argv []){
     MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
     if (myrank == MASTER_RANK) {
-        std::cout << "Number of processes " << numprocs << std:endl;
+        std::cout << "Number of processes " << numprocs << std::endl;
        for(int source = 1; source < numprocs; source++){
             MPI_Send(&source, 1, MPI_INT, source, MESSAGE_TAG, MPI_COMM_WORLD);
             std::cout << "I am the Master, sending to " << source << " this integer: " << source << std::endl;

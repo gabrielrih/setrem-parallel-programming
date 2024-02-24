@@ -43,7 +43,7 @@ int main(int argc, char *argv []){
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-    std::cout << "Number of processes " << numprocs
+    std::cout << "Number of processes " << numprocs;
     if (myrank == MASTER_RANK) {
        for(int source = 1; source < numprocs; source++){
             MPI_Send(&source, 1, MPI_INT, source, MESSAGE_TAG, MPI_COMM_WORLD);

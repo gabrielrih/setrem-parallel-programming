@@ -38,9 +38,6 @@
 const int EMMITER_RANK = 0;
 const int COLLECTOR_RANK = 1;
 const int MIN_OF_PROCESSES = 3;  // the emitter, the collector and at least one worker
-
-const int WORKERS_QUANTITY = 1;
-
 const int MESSAGE_TAG=0;
 
 int main(int argc, char *argv []){
@@ -61,8 +58,8 @@ int main(int argc, char *argv []){
     
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
-        std::cout << "Number of processes " << numprocs << std::endl;
-        std::cout << "Number of workers " << workers_quantity << std::endl;
+        std::cout << "Number of processes: " << numprocs << std::endl;
+        std::cout << "Number of workers: " << workers_quantity << std::endl;
         int worker_rank;
         for(int worker = 0; worker < workers_quantity; worker++) { // send message to each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
@@ -72,13 +69,15 @@ int main(int argc, char *argv []){
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
-        //MPI_Status status;
-        //int message = 0;
-        //for(auto worker: WORKERS_RANK) {  // receive message from every single worker
+        MPI_Status status;
+        int message = 0;
+        int worker_rank;
+        for(int worker = 0; worker < workers_quantity; worker++) { // receive message from each work
+            worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             //MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
-            //std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
+            std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
         //}
-        std::cout << "I am the collector!" << std::endl;
+        //std::cout << "I am the collector!" << std::endl;
     }
     else { // Run on workers, send message to collector
         std::cout << "I am the worker " << myrank << std::endl;

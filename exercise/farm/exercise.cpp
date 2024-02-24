@@ -77,6 +77,8 @@ int main(int argc, char *argv []){
     }
     else { // Run on workers, send message to collector
         std::cout << "I am the worker " << myrank << std::endl;
+
+        // Receive message
         MPI_Status status;
         int message = 0;
         MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
@@ -84,6 +86,7 @@ int main(int argc, char *argv []){
         
         // Do the work
         int final_message = message * 10;
+
         // Sending message to the collector
         MPI_Send(&final_message, 1, MPI_INT, COLLECTOR_RANK, MESSAGE_TAG, MPI_COMM_WORLD);
         std::cout << "I am the worker " << myrank << " and the message was sent to the collector" << std::endl;

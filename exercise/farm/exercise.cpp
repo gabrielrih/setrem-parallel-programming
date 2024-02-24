@@ -48,8 +48,8 @@ int main(int argc, char *argv []){
     MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
     MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 
-    // Validation
-    int min_of_processes=WORKERS_QUANTITY + 2;  // emitter, collector and workers
+    // Validation, minimum of processes
+    int min_of_processes=WORKERS_QUANTITY + 2;  // the plus two refers to the emitter and the collector
     if (numprocs < min_of_processes) {
         MPI_Finalize();
         std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
@@ -63,8 +63,8 @@ int main(int argc, char *argv []){
         for(int worker = 0; worker < WORKERS_QUANTITY; worker++) { // send message to each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             int message = 2;  // any message, just for testing
-            MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);
             std::cout << "I am the emitter, sending to the worker " << worker_rank << " this message: " << message << std::endl;
+            MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done

@@ -56,7 +56,9 @@ int main(int argc, char *argv []){
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes: " << numprocs << std::endl;
-        std::cout << "Number of workers: " << numprocs - 2 << std::endl;
+        // FIX IT
+        //std::cout << "Number of workers: " << numprocs - 2 << std::endl;
+        std::cout << "Number of workers: " << numprocs - 1 << std::endl;
         // FIX IT
         // Change it to 2
         for(int worker = 1; worker < numprocs; worker++) { // send message to each worker

@@ -37,6 +37,8 @@
 // Farm pattern: ranks
 const int EMMITER_RANK = 0;
 const int COLLECTOR_RANK = 1;
+const int MIN_OF_PROCESSES = 3;  // the emitter, the collector and at least one worker
+
 const int WORKERS_QUANTITY = 1;
 
 const int MESSAGE_TAG=0;
@@ -49,18 +51,19 @@ int main(int argc, char *argv []){
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 
     // Validation, minimum of processes
-    int min_of_processes=WORKERS_QUANTITY + 2;  // the plus two refers to the emitter and the collector
-    if (numprocs < min_of_processes) {
+    if (numprocs < MIN_OF_PROCESSES) {
         MPI_Finalize();
         std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
         return 1;
     }
 
+    int workers_quantity = numprocs - 2  // subtract the emitter and collector
+    
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes " << numprocs << std::endl;
-        int worker_rank;
-        for(int worker = 0; worker < WORKERS_QUANTITY; worker++) { // send message to each work
+        int worker_rank;    
+        for(int worker = 0; worker < workers_quantity; worker++) { // send message to each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             int message = 2;  // any message, just for testing
             std::cout << "I am the emitter, sending to the worker " << worker_rank << " this message: " << message << std::endl;

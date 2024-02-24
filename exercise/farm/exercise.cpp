@@ -69,7 +69,7 @@ int main(int argc, char *argv []){
         int message = 0;
         for(auto worker: WORKERS_RANK) {  // receive message from every single worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
-            std::cout << "I am the collector and I received this message: " << message " from worker " << worker << std::endl;
+            std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
         }
     }
     else { // Run on workers, send message to collector

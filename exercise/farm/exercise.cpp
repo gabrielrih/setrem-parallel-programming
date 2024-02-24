@@ -91,8 +91,8 @@ int main(int argc, char *argv []){
         int final_message = message * 10;
 
         // Sending message to the collector
-        MPI_Send(&final_message, 1, MPI_INT, COLLECTOR_RANK, MESSAGE_TAG, MPI_COMM_WORLD);
-        std::cout << "I am the worker " << myrank << " and the message was sent to the collector" << std::endl;
+        //MPI_Send(&final_message, 1, MPI_INT, COLLECTOR_RANK, MESSAGE_TAG, MPI_COMM_WORLD);
+        //std::cout << "I am the worker " << myrank << " and the message was sent to the collector" << std::endl;
     }
     MPI_Finalize();
     return 0;

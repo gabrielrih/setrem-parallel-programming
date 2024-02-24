@@ -69,7 +69,7 @@ int main(int argc, char *argv []){
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
-        MPI_Status status;
+        //MPI_Status status;
         int message = 0;
         int worker_rank;
         for(int worker = 0; worker < workers_quantity; worker++) { // receive message from each work

@@ -48,10 +48,14 @@ int main(int argc, char *argv []){
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 
     // Validation, minimum of processes
+    //if (numprocs < MIN_OF_PROCESSES) {
+    //    MPI_Finalize();
+    //    std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
+    //    return 1;
+    //}
     if (numprocs < MIN_OF_PROCESSES) {
-        MPI_Finalize();
         std::cout << "ERROR: The quantity of informed processes are to low!" << std::endl;
-        return 1;
+        MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
     // Create the workers rank
@@ -69,7 +73,7 @@ int main(int argc, char *argv []){
         int message = 0;
         int sum = 0;
         for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
-            MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
             sum += message;
         }
@@ -81,7 +85,7 @@ int main(int argc, char *argv []){
         // Receive message
         MPI_Status status;
         int message = 0;
-        MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
+        MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         std::cout << "I am the worker " << myrank << " and received this message: " << message << std::endl;
         
         // Do the work

@@ -37,7 +37,7 @@
 // Farm pattern: ranks
 const int EMMITER_RANK = 0;
 const int COLLECTOR_RANK = 1;
-const int WORKERS_QUANTITY = 2;
+const int WORKERS_QUANTITY = 1;
 
 const int MESSAGE_TAG=0;
 

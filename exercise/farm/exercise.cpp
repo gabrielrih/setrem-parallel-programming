@@ -64,7 +64,7 @@ int main(int argc, char *argv []){
             std::cout << "I am the emitter, sending to the worker " << worker << " this message: " << message << std::endl;
         }
     }
-    elif (myrank == COLLECTOR_RANK) { // Run on collector, it's done
+    else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
         for(auto worker: WORKERS_RANK) {  // receive message from every single worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
             std::cout << "I am the collector and I received this message: " << message " from worker " << worker << std::endl;

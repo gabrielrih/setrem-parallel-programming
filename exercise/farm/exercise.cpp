@@ -65,6 +65,7 @@ int main(int argc, char *argv []){
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
+        int message = 0;
         for(auto worker: WORKERS_RANK) {  // receive message from every single worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
             std::cout << "I am the collector and I received this message: " << message " from worker " << worker << std::endl;
@@ -72,7 +73,7 @@ int main(int argc, char *argv []){
     }
     else { // Run on workers, send message to collector
         MPI_Status status;
-        int message=0;
+        int message = 0;
         MPI_Recv(&message, 1, MPI_INT, EMMITER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status);
         std::cout << "I am the worker " << myrank << ", receiving this message: " << message << std::endl;
         // Do the work

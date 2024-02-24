@@ -1,4 +1,4 @@
-# Cluster of workstations
+# Using multiple VMs to run parallel code (Cluster of workstations)
 
 We are basically deploying a cluster of workstations to run and test parallel code.
 
@@ -177,7 +177,6 @@ df -h
 
 ### OpenMPI
 
-
 __On the primary__, we must install the OpenMPI library.
 ```sh
 sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev
@@ -193,3 +192,113 @@ secondary2
 secondary3
 EOT
 ```
+
+#### Running code in the same machine
+
+Creating the source code:
+```sh
+su - mpihpc
+vi example.cpp
+```
+
+```c++
+#include <iostream>
+#include <mpi.h>
+
+const int MESSAGE_TAG=0;
+const int MASTER_RANK=0;
+
+int main(int argc, char *argv []){
+    int myrank, //who am i
+    numprocs; //how many process
+    MPI_Init(&argc,&argv);
+    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
+    MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+    if (myrank == MASTER_RANK) {
+       for(int source = 1; source < numprocs; source++){
+            MPI_Send(&source, 1, MPI_INT, source, MESSAGE_TAG, MPI_COMM_WORLD);
+            std::cout << "I am the Master, sending to " << source << " this integer: " << source << std::endl;
+        }
+    }else{
+        MPI_Status status;
+        int message=0;
+        MPI_Recv(&message, 1, MPI_INT, MASTER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status );
+        std::cout << "I am the Slave " << myrank << " Receiving this integer: " << message << std::endl;
+    }
+    MPI_Finalize();
+    return 0;
+}
+```
+
+Compiling:
+```sh
+mpic++ -O3 -Wall -std=c++1y example.cpp -o output
+```
+
+Running the code in the same machine:
+```sh
+mpirun -np 3 ./output
+```
+
+> Note that in this case the _mpirun_ are running the code in three different processes but all of them in the same machine.
+
+
+#### Running code to run in multiple machines
+
+Creating the source code:
+```sh
+su - mpihpc
+vi example_cluster.cpp
+```
+
+```c++
+#include <mpi.h>
+#include <iostream>
+#include <stdlib.h>
+#include <string.h>
+
+char *getCommandResult(const char *cmd){
+	if (cmd == NULL) return NULL;
+	FILE *pipe = popen(cmd, "r");
+	char *data = (char *) malloc(sizeof(char) * 2566);
+	char *bf = (char *) malloc(sizeof(char) * 256);
+	if (pipe) {
+		while (fgets(bf, 256, pipe) != NULL) strcat(data,bf);
+		pclose(pipe);
+	}else{
+		perror("popen");
+		pclose(pipe);
+		return NULL;
+	}
+	free(bf);
+	return data;
+}
+int main(int argc, char **argv){
+	int myrank, //who am i
+	numprocs; //how many process
+
+	MPI_Init(&argc,&argv);
+	MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
+	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+
+	char buff[256];
+	sprintf(buff,"hostname && gcc --version");
+	char *dat = getCommandResult("hostname && gcc --version");
+	std::cout << "myrank: " << myrank << " of " << numprocs << " -> " << dat << std::endl;
+
+	MPI_Finalize();
+	return 0;
+}
+```
+
+Compiling:
+```sh
+mpic++ -O3 -Wall -std=c++1y example_cluster.cpp -o output
+```
+
+Running the code in multiple machines:
+```sh
+mpirun -np 4 --machinefile /home/mpihpc/.cluster_hostfile ./output
+```
+
+> Note that in this case the _mpirun_ are running using four different processes. By default, each process are allocated in a different vCore. If the -np value is bigger than the number of vCores in all the cluster, the default behavior is to generate an error.

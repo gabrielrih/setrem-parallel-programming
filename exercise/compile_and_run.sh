@@ -6,7 +6,7 @@ exe_file='tmp_exe'
 file='farm/exercise.cpp'
 
 echo "(+) Compiling"
-rm $exe_file
+if [ -f "$exe_file" ]; then rm $exe_file; fi
 mpic++ -Wall -std=c++1y -O3 $file -o $exe_file
 
 echo "(+) Running..."

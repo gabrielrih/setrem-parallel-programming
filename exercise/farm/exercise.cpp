@@ -65,7 +65,7 @@ int main(int argc, char *argv []){
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
-        //MPI_Status status;
+        MPI_Status status;
         int message = 0;
         for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);

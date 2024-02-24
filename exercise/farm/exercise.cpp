@@ -37,7 +37,8 @@
 // Farm pattern: ranks
 const int EMMITER_RANK = 0;
 const int COLLECTOR_RANK = 1;
-const int WORKERS_RANK[] = {2, 3};
+//const int WORKERS_RANK[] = {2, 3, 4, 5, 6, 7, 8};
+const int WORKERS_QUANTITY = 2;
 
 const int MESSAGE_TAG=0;
 
@@ -57,11 +58,12 @@ int main(int argc, char *argv []){
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes " << numprocs << std::endl;
-        //for(int source = 1; source < (numprocs - 1); source++){
-        for(auto worker: WORKERS_RANK) {  // send message for each work
+        int worker_rank;
+        for(int worker = 0; i < sizeof(WORKERS_QUANTITY); worker++) { // send message to each work
+            worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             int message = 2;  // any message, just for testing
-            MPI_Send(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD);
-            std::cout << "I am the emitter, sending to the worker " << worker << " this message: " << message << std::endl;
+            MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);
+            std::cout << "I am the emitter, sending to the worker " << worker_rank << " this message: " << message << std::endl;
         }
     }
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done

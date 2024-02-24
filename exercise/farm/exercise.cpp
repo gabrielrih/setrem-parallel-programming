@@ -67,11 +67,13 @@ int main(int argc, char *argv []){
     else if (myrank == COLLECTOR_RANK) { // Run on collector, it's done
         MPI_Status status;
         int message = 0;
+        int sum = 0;
         for(int worker = 2; worker < numprocs; worker++) { // receive message from each worker
             MPI_Recv(&message, 1, MPI_INT, worker, MESSAGE_TAG, MPI_COMM_WORLD, &status);
             std::cout << "I am the collector and I received from worker " << worker << " this message: " << message << std::endl;
+            sum += message
         }
-        //std::cout << "I am the collector!" << std::endl;
+        std::cout << "I am the collector and the sum of the received values are: " << sum << std::endl;
     }
     else { // Run on workers, send message to collector
         std::cout << "I am the worker " << myrank << std::endl;

@@ -62,6 +62,7 @@ int main(int argc, char *argv []){
     // Create the workers rank
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes " << numprocs << std::endl;
+        std::cout << "Number of workers " << workers_quantity << std:endl;
         int worker_rank;    
         for(int worker = 0; worker < workers_quantity; worker++) { // send message to each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector

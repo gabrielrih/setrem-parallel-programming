@@ -51,8 +51,10 @@ int main(int argc, char *argv []){
     // Validation
     int min_of_processes=WORKERS_QUANTITY + 2;  // emitter, collector and workers
     if (numprocs < min_of_processes) {
-        throw std::invalid_argument("The quantity of informed processes are to low!");
-        exit(1);
+        //throw std::invalid_argument("The quantity of informed processes are to low!");
+        MPI_Finalize();
+        return 1;
+        //exit(1);
     }
 
     // Create the workers rank

@@ -59,7 +59,7 @@ int main(int argc, char *argv []){
     if (myrank == EMMITER_RANK) { // Run on emitter, send message to the workers
         std::cout << "Number of processes " << numprocs << std::endl;
         int worker_rank;
-        for(int worker = 0; i < sizeof(WORKERS_QUANTITY); worker++) { // send message to each work
+        for(int worker = 0; worker < sizeof(WORKERS_QUANTITY); worker++) { // send message to each work
             worker_rank = worker + 2;  // this is because the rank 0 and 1 are used by the emitter and collector
             int message = 2;  // any message, just for testing
             MPI_Send(&message, 1, MPI_INT, worker_rank, MESSAGE_TAG, MPI_COMM_WORLD);

@@ -5,7 +5,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 numProc = comm.Get_size()
 
-
+print(rank)
 if rank == 0:
     dado = "eu "
     for destino in range(1, numProc):

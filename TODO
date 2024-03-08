@@ -1,0 +1,6 @@
+- Configurar ambiente com:
+    - pyenv
+    - python
+    - bibliotecas necessários do python
+
+- Testar um código simples em Python usando OpenMPI. Funciona?

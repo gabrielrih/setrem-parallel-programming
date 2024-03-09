@@ -31,9 +31,11 @@ class ParallelManager:
             raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
         me = self.comm.Get_rank()  # who am I?
         if me == Rank.EMITTER.value:
+            logger.info(f'Searching quantity of prime numbers until {until_number}')
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
         elif me == Rank.COLLECTOR.value:
-            Collector(self.comm).start(until_number)
+            quantity = Collector(self.comm).start(until_number)
+            logger.info(f'There are {quantity} prime numbers before {until_number}!')
         else:
             Worker(self.comm, me).start()
 
@@ -95,7 +97,7 @@ class Collector:
         self._primer_numbers = list()
         self._data = Data()
 
-    def start(self, until_number: int):
+    def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
         logger.debug(f'Starting the collector')
         expected_responses = until_number - 1
@@ -106,8 +108,8 @@ class Collector:
             if is_prime: self._primer_numbers.append(number)
             received_responses += 1
         logger.debug(f'The prime numbers are: {str(self._primer_numbers)}')
-        logger.info(f'There are {len(self._primer_numbers)} prime numbers before {until_number}!')
         logger.debug(f'Finishing the collector')
+        return len(self._primer_numbers)        
 
 
 class Worker:

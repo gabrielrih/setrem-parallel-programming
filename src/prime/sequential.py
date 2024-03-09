@@ -7,7 +7,8 @@ logger = Logger.get_logger(__name__)
 
 class SequentialManager:
     @staticmethod
-    def run(until_number: int) -> None:
+    def run(until_number: int):
+        logger.info(f'Searching quantity of prime numbers until {until_number}')
         quantity = SequentialManager.quantity_of_prime_numbers(until_number)
         logger.info(f'There are {quantity} prime numbers before {until_number}!')
 

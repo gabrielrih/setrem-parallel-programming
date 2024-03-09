@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List
 from copy import deepcopy
 
-
+from src.util.converters import StringConverter
 from src.util.logger import Logger
 
 
@@ -73,6 +73,7 @@ class Collector:
     def __init__(self, comm):
         self.comm = comm
         self._primer_numbers = list()
+        self._converter = StringConverter()
 
     def start(self, until_number: int):
         logger.info(f'Starting the collector')
@@ -83,8 +84,8 @@ class Collector:
             print(raw_data)
             print(type(raw_data))
             splitted_data = raw_data.split(':')
-            number = splitted_data[0]
-            is_prime = splitted_data[1]
+            number = int(splitted_data[0])
+            is_prime = self._converter.string_to_bool(splitted_data[1])
             print(f'Number: {number} {type(number)} - is_prime {is_prime} {type(is_prime)}')
             # logger.debug(f'Collector received: {str(data)}')
             # if data['is_prime']:

@@ -83,7 +83,8 @@ class Collector:
         while received_responses < expected_responses:
             raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
             print(raw_data)
-            # data = json.loads(raw_data)
+            print(type(raw_data))
+            data = json.loads(raw_data)
             # logger.debug(f'Collector received: {str(data)}')
             # if data['is_prime']:
             #     self._primer_numbers.append(data['number'])

@@ -1,3 +1,5 @@
+import json
+
 from mpi4py import MPI
 from enum import Enum
 from typing import List
@@ -29,7 +31,7 @@ class ParallelManager:
         if me == Rank.EMITTER.value:
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
         elif me == Rank.COLLECTOR.value:
-            Collector(self.comm).start()
+            Collector(self.comm).start(until_number)
         else:
             Worker(self.comm, me).start()
 
@@ -74,15 +76,20 @@ class Collector:
         self.comm = comm
         self._primer_numbers = list()
 
-    def start(self):
+    def start(self, until_number: int):
         logger.info(f'Starting the collector')
-        # While / listening
-        # Receive every single response from workers
-        #   and append it to the array.
-        # Return the array at the end
-        # Problem: How to know when to stop the while?
+        expected_responses = until_number - 1
+        received_responses = 0
+        while received_responses < expected_responses:
+            raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
+            data = json.loads(raw_data)
+            logger.debug(f'Collector received: {str(data)}')
+            if data['is_prime']:
+                self._primer_numbers.append(data['number'])
+            received_responses += 1
+        
+        logger.info(f'The prime numbers are: {str(self._primer_numbers)}')
         logger.info(f'Finishing the collector')
-        pass
 
 
 class Worker:
@@ -94,12 +101,19 @@ class Worker:
         ''' Receive numbers and return if it is prime or not '''
         logger.info(f'Starting the worker {str(self.me)}')
         while True:
+            # Receiving number to check if it's prime
             number = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
             is_prime = Worker.is_prime_number(number)
             logger.info(f'I am the worker {str(self.me)}. Is {number} prime? {str(is_prime)}')
-            # FIX IT
-            # Send data to collector
-
+            # Sending data to collector
+            data = {
+                'number': number,
+                'is_prime': is_prime
+            }
+            self.comm.send(
+                obj = str(data),  # data
+                dest = Rank.COLLECTOR.value  # traget
+            )
             # FIX IT
             # How to break the loop?
         logger.info(f'Finishing the worker {str(self.me)}')

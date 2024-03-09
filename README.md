@@ -59,7 +59,7 @@ ImportError: DLL load failed while importing MPI: Não foi possível encontrar o
 
 ## Environment for testing
 
-To run this code in a testing environment, we must create this environment. So, before everything just create this environment following [these steps](./ENVIRONMENT.md).
+To run this code in a testing environment, we must create this environment. So, before everything just create this environment following [these steps](./.docs/ENVIRONMENT.md).
 
 The next steps you must run on __primary__.
 

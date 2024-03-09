@@ -177,6 +177,9 @@ df -h
 ```
 
 ### Installing Python
+
+The below steps must be ran in all nodes of the cluster (primary and secondaries).
+
 - [Installing Pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#unixmacos) to control Python versions (multi versions)
 ```sh
 curl https://pyenv.run | bash

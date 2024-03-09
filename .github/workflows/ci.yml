@@ -21,7 +21,7 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          apt install openmpi-bin openmpi-common libopenmpi-dev
+          sudo apt install openmpi-bin openmpi-common libopenmpi-dev
           python -m pip install --upgrade pip
           if [ -f requirements/common.txt ]; then pip install -r requirements/common.txt; fi
           if [ -f requirements/dev.txt ]; then pip install -r requirements/dev.txt; fi
@@ -42,7 +42,7 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          apt install openmpi-bin openmpi-common libopenmpi-dev
+          sudo apt install openmpi-bin openmpi-common libopenmpi-dev
           python -m pip install --upgrade pip
           if [ -f requirements/common.txt ]; then pip install -r requirements/common.txt; fi
           if [ -f requirements/dev.txt ]; then pip install -r requirements/dev.txt; fi

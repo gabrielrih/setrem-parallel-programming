@@ -44,8 +44,8 @@ class Emitter:
         number = 2  # starts by two because this is the first prime number
         while number <= until_number:
             if not workers_rank:
-                logger.debug('Charging workers_rank again')
                 workers_rank = self._workers_rank  # rotate the rank
+                logger.debug(f'Charging workers_rank again. {str(workers_rank)}')
             worker = workers_rank.pop()  # remove one element
             logger.info(f'Sending data {str(number)} to {worker =}')
             self.comm.send(

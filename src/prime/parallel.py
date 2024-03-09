@@ -1,5 +1,3 @@
-import json
-
 from mpi4py import MPI
 from enum import Enum
 from typing import List
@@ -84,7 +82,10 @@ class Collector:
             raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
             print(raw_data)
             print(type(raw_data))
-            data = json.loads(raw_data)
+            splitted_data = raw_data.split(':')
+            number = splitted_data[0]
+            is_prime = splitted_data[1]
+            print(f'Number: {number} {type(number)} - is_prime {is_prime} {type(is_prime)}')
             # logger.debug(f'Collector received: {str(data)}')
             # if data['is_prime']:
             #     self._primer_numbers.append(data['number'])
@@ -108,10 +109,7 @@ class Worker:
             is_prime = Worker.is_prime_number(number)
             logger.info(f'I am the worker {str(self.me)}. Is {number} prime? {str(is_prime)}')
             # Sending data to collector
-            data = {
-                'number': number,
-                'is_prime': is_prime
-            }
+            data = f'{number}:{is_prime}'
             self.comm.send(
                 obj = str(data),  # data
                 dest = Rank.COLLECTOR.value  # traget

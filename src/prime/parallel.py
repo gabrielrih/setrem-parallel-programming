@@ -84,7 +84,7 @@ class Worker:
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
         while True:
-            number = self.comm.recv(source = Rank.EMITTER)  # wait until receive data
+            number = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
             is_prime = Worker.is_prime_number(number)
             logger.info(f'I am the worker {str(self.me)}. Is {number} prime? {str(is_prime)}')
             # FIX IT

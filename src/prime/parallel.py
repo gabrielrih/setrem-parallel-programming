@@ -80,16 +80,16 @@ class Collector:
         expected_responses = until_number - 1
         received_responses = 0
         while received_responses < expected_responses:
-            raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
-            print(raw_data)
-            print(type(raw_data))
+            # wait until receive data
+            raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  
+            # get data
             splitted_data = raw_data.split(':')
             number = int(splitted_data[0])
             is_prime = self._converter.string_to_bool(splitted_data[1])
             print(f'Number: {number} {type(number)} - is_prime {is_prime} {type(is_prime)}')
-            # logger.debug(f'Collector received: {str(data)}')
-            # if data['is_prime']:
-            #     self._primer_numbers.append(data['number'])
+            # save if it's a prime number
+            if is_prime:
+                self._primer_numbers.append(number)
             received_responses += 1
         
         logger.info(f'The prime numbers are: {str(self._primer_numbers)}')

@@ -17,19 +17,15 @@ logger = Logger.get_logger(__name__)
               type=click.INT,
               required=True,
               help='Until which number calculate the quantity of prime numbers')
-@click.option('--workers',
-              type=click.INT,
-              default=1,
-              help='How many workers to use on parallel mode')
 
 
-def run(mode: str, until_number: int, workers: int) -> None:
+def run(mode: str, until_number: int) -> None:
     logger.info(f'Searching quantity of prime numbers until {until_number}')
     logger.info(f'Starting in {mode =}')
     if mode == 'sequential':
-        SequentialManager.run(until_number)
+        SequentialManager().run(until_number)
         return
-    ParallelManager.run(until_number, workers)
+    ParallelManager().run(until_number)
 
 
 if __name__ == '__main__':

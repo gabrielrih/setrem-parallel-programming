@@ -70,7 +70,7 @@ class Emitter:
             if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
             data = str(number)
-            logger.info(f'Sending data {data} to {worker =}')
+            logger.debug(f'Sending data {data} to {worker =}')
             self.comm.send(obj = data, dest = worker)
             number += 1
         # Nothing more to do, it sends a message to the workers to stop processing

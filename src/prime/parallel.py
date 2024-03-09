@@ -39,6 +39,7 @@ class Emitter:
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
 
     def start(self, until_number: int):
+        logger.info('Starting the emitter')
         workers_rank = self._workers_rank
         number = 2  # starts by two because this is the first prime number
         while number <= until_number:
@@ -83,6 +84,7 @@ class Worker:
 
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
+        logger.info(f'Starting the worker {str(self.me)}')
         while True:
             number = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
             is_prime = Worker.is_prime_number(number)

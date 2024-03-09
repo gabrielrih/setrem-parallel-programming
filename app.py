@@ -20,9 +20,9 @@ logger = Logger.get_logger(__name__)
 
 
 def run(mode: str, until_number: int) -> None:
-    logger.info(f'Searching quantity of prime numbers until {until_number}')
-    logger.info(f'Starting in {mode =}')
     if mode == 'sequential':
+        logger.info(f'Searching quantity of prime numbers until {until_number}')
+        logger.info(f'Starting in {mode =}')
         SequentialManager().run(until_number)
         return
     ParallelManager().run(until_number)

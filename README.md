@@ -5,7 +5,7 @@
 - [Development stack](#development-stack)
 - [Architecture](#architecture)
 - [Local testing](#local-testing)
-- [Environment testing](#environment-testing)
+- [Environment for testing](#environment-for-testing)
     - [Running parallel code in the same machine](#running-parallel-code-in-the-same-machine)
     - [Running parallel code in multiple machines](#running-parallel-code-in-multiple-machines)
     - [Running sequential code](#running-sequential-code)
@@ -57,7 +57,7 @@ ImportError: DLL load failed while importing MPI: Não foi possível encontrar o
 ```
 
 
-## Testing Environment
+## Environment for testing
 
 To run this code in a testing environment, we must create this environment. So, before everything just create this environment following [these steps](./ENVIRONMENT.md).
 

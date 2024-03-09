@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             //"args": "${command:pickArgs}"
-            "args": "--mode sequential --until-number 5000"
+            "args": "--mode sequential --until-number 100000"
         }
     ]
 }

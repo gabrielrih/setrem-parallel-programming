@@ -7,6 +7,7 @@ We are basically deploying a cluster of workstations to run and test parallel co
 - [Network: Host-Only Adapter and NAT](https://download.virtualbox.org/virtualbox/7.0.14/UserManual.pdf)
 - [Ubuntu Server 22.04.3](https://ubuntu.com/download/server)
 - [NFS](https://en.wikipedia.org/wiki/Network_File_System)
+- [Python 3.11](https://www.python.org/)
 - [OpenMPI](https://github.com/open-mpi/ompi)
 
 ## Architecture:
@@ -175,6 +176,72 @@ To check if it worked just run the command below. You should be able to see the 
 df -h
 ```
 
+### Installing Python
+- [Installing Pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#unixmacos) to control Python versions (multi versions)
+```sh
+curl https://pyenv.run | bash
+```
+
+> Note that after the installation, you must add pyenv on PATH. Follow the structure of the documentation to do that.
+
+![](.docs/img/pyenv_install.png)
+
+Checking if everything was installed:
+```sh
+pyenv --version
+```
+
+- Then, it's necessary also to install extra packages to be used by Pyenv:
+
+```sh
+sudo apt update
+sudo apt install \
+    build-essential \
+    curl \
+    libbz2-dev \
+    libffi-dev \
+    liblzma-dev \
+    libncursesw5-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    llvm \
+    make \
+    tk-dev \
+    wget \
+    xz-utils \
+    zlib1g-dev
+```
+
+- Installing an specific Python version:
+```sh
+pyenv install 3.11.8
+```
+
+Configure the global version to be used
+```sh
+pyenv global 3.11.8
+```
+
+This way you can check the installed Python versions
+```sh
+pyenv versions
+```
+
+And here you can check the current Python version (it must match with the previous command).
+```sh
+python --version
+```
+
+- Installing Python packages:
+```sh
+python -m pip install mpi4py
+python -m pip install click
+```
+
+
 ### OpenMPI
 
 __In all machines__, we must install the OpenMPI library.
@@ -188,119 +255,11 @@ __On the primary__, we must install the OpenMPI library.
 ```sh
 su - mpihpc
 cat <<EOT >> /home/mpihpc/.cluster_hostfile
-primary
-secondary1
-secondary2
-secondary3
+primary slots=3
+secondary1 slots=1
+secondary2 slots=1
+secondary3 slots=1
 EOT
 ```
 
-#### Running code in the same machine
-
-Creating the source code:
-```sh
-su - mpihpc
-vi example.cpp
-```
-
-```c++
-#include <iostream>
-#include <mpi.h>
-
-const int MESSAGE_TAG=0;
-const int MASTER_RANK=0;
-
-int main(int argc, char *argv []){
-    int myrank, //who am i
-    numprocs; //how many process
-    MPI_Init(&argc,&argv);
-    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
-    MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-    if (myrank == MASTER_RANK) {
-       for(int source = 1; source < numprocs; source++){
-            MPI_Send(&source, 1, MPI_INT, source, MESSAGE_TAG, MPI_COMM_WORLD);
-            std::cout << "I am the Master, sending to " << source << " this integer: " << source << std::endl;
-        }
-    }else{
-        MPI_Status status;
-        int message=0;
-        MPI_Recv(&message, 1, MPI_INT, MASTER_RANK, MESSAGE_TAG, MPI_COMM_WORLD, &status );
-        std::cout << "I am the Slave " << myrank << " Receiving this integer: " << message << std::endl;
-    }
-    MPI_Finalize();
-    return 0;
-}
-```
-
-Compiling:
-```sh
-mpic++ -O3 -Wall -std=c++1y example.cpp -o output
-```
-
-Running the code in the same machine:
-```sh
-mpirun -np 3 ./output
-```
-
-> Note that in this case the _mpirun_ are running the code in three different processes but all of them in the same machine. Another important thing is that each process is created in a differente vCore, so, in the case, the VM must have thre or more vCores.
-
-
-#### Running code to run in multiple machines
-
-Creating the source code:
-```sh
-su - mpihpc
-vi example_cluster.cpp
-```
-
-```c++
-#include <mpi.h>
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
-
-char *getCommandResult(const char *cmd){
-	if (cmd == NULL) return NULL;
-	FILE *pipe = popen(cmd, "r");
-	char *data = (char *) malloc(sizeof(char) * 2566);
-	char *bf = (char *) malloc(sizeof(char) * 256);
-	if (pipe) {
-		while (fgets(bf, 256, pipe) != NULL) strcat(data,bf);
-		pclose(pipe);
-	}else{
-		perror("popen");
-		pclose(pipe);
-		return NULL;
-	}
-	free(bf);
-	return data;
-}
-int main(int argc, char **argv){
-	int myrank, //who am i
-	numprocs; //how many process
-
-	MPI_Init(&argc,&argv);
-	MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
-	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-
-	char buff[256];
-	sprintf(buff,"hostname && gcc --version");
-	char *dat = getCommandResult("hostname && gcc --version");
-	std::cout << "myrank: " << myrank << " of " << numprocs << " -> " << dat << std::endl;
-
-	MPI_Finalize();
-	return 0;
-}
-```
-
-Compiling:
-```sh
-mpic++ -O3 -Wall -std=c++1y example_cluster.cpp -o output
-```
-
-Running the code in multiple machines:
-```sh
-mpirun -np 4 --machinefile /home/mpihpc/.cluster_hostfile ./output
-```
-
-> Note that in this case the _mpirun_ are running using four different processes. By default, each process are allocated in a different vCore. If the -np value is bigger than the number of vCores in all the cluster, the default behavior is to generate an error.
+> The slots represents the quantity of vCores available in each VM.

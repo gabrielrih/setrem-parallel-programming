@@ -1,6 +1,6 @@
 from mpi4py import MPI
 from enum import Enum
-from typing import List
+from typing import List, Dict
 from copy import deepcopy
 
 from src.util.converters import StringConverter
@@ -13,6 +13,10 @@ logger = Logger.get_logger(__name__)
 class Rank(Enum):
     EMITTER = 0
     COLLECTOR = 1
+
+
+class Signals(Enum):
+    END_SIGNAL = 'end_signal'
 
 
 class ParallelManager:
@@ -34,32 +38,48 @@ class ParallelManager:
             Worker(self.comm, me).start()
 
 
+class Data:
+    DELIMITER = ':'
+
+    @staticmethod
+    def serialize(number: int, is_prime: bool) -> str:
+        return f'{str(number)}{str(Data.DELIMITER)}{str(is_prime)}'
+
+    @staticmethod
+    def deserialize(data: str):
+        raw_data = data.split(Data.DELIMITER)
+        number = int(raw_data[0])
+        is_prime = StringConverter.string_to_bool(raw_data[1])
+        return number, is_prime
+
+
 class Emitter:
     def __init__(self, comm, quantity_of_processes: int):
         self.comm = comm
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
 
     def start(self, until_number: int):
-        logger.info('Starting the emitter')
+        ''' Send work for the workers '''
+        logger.debug('Starting the emitter')
+        # While there are numbers to check, send work to workers
         workers_rank = deepcopy(self._workers_rank)
         number = 2  # starts by two because this is the first prime number
         while number <= until_number:
-            if not workers_rank:
-                workers_rank = deepcopy(self._workers_rank)  # rotate the rank
-                logger.debug(f'Charging workers_rank again. {str(workers_rank)}')
-            worker = workers_rank.pop()  # remove one element
-            logger.info(f'Sending data {str(number)} to {worker =}')
-            self.comm.send(
-                obj = number,  # data
-                dest = worker  # traget
-            )
+            if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
+            worker = workers_rank.pop()
+            data = str(number)
+            logger.info(f'Sending data {data} to {worker =}')
+            self.comm.send(obj = data, dest = worker)
             number += 1
-        logger.info('Finishing the emitter')
+        # Nothing more to do, it sends a message to the workers to stop processing
+        for worker in self._workers_rank:
+            logger.debug(f'Sending end_signal to worker {worker}')
+            self.comm.send(obj = Signals.END_SIGNAL.value, dest = worker)
+        logger.debug('Finishing the emitter')
 
     @staticmethod
     def get_workers_rank(quantity_of_processes: int) -> List[int]:
         ''' The workers rank are all but the emitter and the collector rank '''
-        #workers_rank = [ rank for rank in range(quantity_of_processes) ]
         workers_rank = list()
         for rank in range(quantity_of_processes):
             if rank == Rank.EMITTER.value: continue
@@ -73,50 +93,46 @@ class Collector:
     def __init__(self, comm):
         self.comm = comm
         self._primer_numbers = list()
-        self._converter = StringConverter()
+        self._data = Data()
 
     def start(self, until_number: int):
-        logger.info(f'Starting the collector')
+        ''' Receive all answers from workers and append the prime numbers '''
+        logger.debug(f'Starting the collector')
         expected_responses = until_number - 1
         received_responses = 0
         while received_responses < expected_responses:
-            # wait until receive data
-            raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  
-            # get data
-            splitted_data = raw_data.split(':')
-            number = int(splitted_data[0])
-            is_prime = self._converter.string_to_bool(splitted_data[1])
-            # save if it's a prime number
-            if is_prime:
-                self._primer_numbers.append(number)
+            raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
+            number, is_prime = self._data.deserialize(raw_data)
+            if is_prime: self._primer_numbers.append(number)
             received_responses += 1
-        
-        logger.info(f'The prime numbers are: {str(self._primer_numbers)}')
-        logger.info(f'Finishing the collector')
+        logger.debug(f'The prime numbers are: {str(self._primer_numbers)}')
+        logger.info(f'There are {len(self._primer_numbers)} prime numbers before {until_number}!')
+        logger.debug(f'Finishing the collector')
 
 
 class Worker:
     def __init__(self, comm, me):
         self.comm = comm
         self.me = me
+        self._data = Data()
 
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
-        logger.info(f'Starting the worker {str(self.me)}')
+        logger.debug(f'Starting the worker {str(self.me)}')
         while True:
-            # Receiving number to check if it's prime
-            number = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
+            # Receive and process data
+            data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
+            if data == Signals.END_SIGNAL.value: break  # It's necessary to break the infinite loop
+            number = int(data)
             is_prime = Worker.is_prime_number(number)
-            logger.info(f'I am the worker {str(self.me)}. Is {number} prime? {str(is_prime)}')
+            logger.debug(f'I am the worker {str(self.me)}. Is {str(number)} prime? {str(is_prime)}')
             # Sending data to collector
-            data = f'{number}:{is_prime}'
+            data = self._data.serialize(number, is_prime)
             self.comm.send(
-                obj = str(data),  # data
-                dest = Rank.COLLECTOR.value  # traget
+                obj = data,
+                dest = Rank.COLLECTOR.value  # target
             )
-            # FIX IT
-            # How to break the loop?
-        logger.info(f'Finishing the worker {str(self.me)}')
+        logger.debug(f'Finishing the worker {str(self.me)}')
 
     @staticmethod
     def is_prime_number(number: int) -> bool:

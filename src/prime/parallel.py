@@ -57,8 +57,8 @@ class Emitter:
     def get_workers_rank(quantity_of_processes: int) -> List[int]:
         ''' The workers rank are all but the emitter and the collector rank '''
         workers_rank = [ rank for rank in range(quantity_of_processes) ]
-        workers_rank.remove(Rank.EMITTER)
-        workers_rank.remove(Rank.COLLECTOR)
+        workers_rank.remove(Rank.EMITTER.value)
+        workers_rank.remove(Rank.COLLECTOR.value)
         logger.debug(f'Workers rank {str(workers_rank)}')
         return workers_rank
 

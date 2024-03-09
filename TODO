@@ -1,19 +1,4 @@
-FALTA FAZER
-
-- Adicionar na doc de OPEN_MPI.md o conteúdo que está em OPEN_MPI_FOR_PYTHON.md
-
-
-PASSO 1: Configuração do ambiente
-- Configurar ambiente com:
-    - pyenv
-    - python
-    - bibliotecas necessários do python
-
-- Testar um código simples em Python usando OpenMPI. Funciona?
-
-- Colocar tudo o que foi feito no arquivo:
-OPEN_MPI_FOR_PYTHON.md
-
+- Documentação: Colocar para inglês.
 
 
 PASSO 2: Desenvolver e testar código sequencial
@@ -25,7 +10,6 @@ PASSO 3: Desenvolver código paralelo
 - Criar código paralelo usando o padrão Farm. 
 - Verificar aqui se conseguimos testar com um mock no VSCode ou se precisamos testar direto no cluster.
 - Separar as funções do farm em classes, assim podemos testar elas isoladamentes.
-- Criar um arquivo .cluster_hostfile aqui no repo do projeto
 
 
 PASSO 4: Rodar código paralelo no cluster
@@ -35,3 +19,6 @@ PASSO 4: Rodar código paralelo no cluster
 PASSO 5: Documentação
 - Teste de performance. Comparar sequencial com paralelo.
 - Documentar tudo o que pudermos. Ambiente utilizado, como foi configurado, o que foi feito, testes, etc.
+
+PASSO 6: Pipeline
+Teste unitário e testar código sequential (teste integração).

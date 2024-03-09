@@ -32,7 +32,7 @@ Este algoritmo possui duas vertentes:
 
 We are using the farm pattern.
 
-![](.pattern.drawio.png)
+![](.docs/img/.pattern.drawio.png)
 
 ## Local testing
 

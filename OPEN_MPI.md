@@ -12,7 +12,7 @@ We are basically deploying a cluster of workstations to run and test parallel co
 
 ## Architecture:
 
-![](.architecture.drawio.png)
+![](.docs/img/.architecture.drawio.png)
 
 ## Virtual Machines setup
 

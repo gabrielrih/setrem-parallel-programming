@@ -43,7 +43,9 @@ class Emitter:
         workers_rank = self._workers_rank
         number = 2  # starts by two because this is the first prime number
         while number <= until_number:
-            if not workers_rank: workers_rank = self._workers_rank  # rotate the rank
+            if not workers_rank:
+                logger.debug('Charging workers_rank again')
+                workers_rank = self._workers_rank  # rotate the rank
             worker = workers_rank.pop()  # remove one element
             logger.info(f'Sending data {str(number)} to {worker =}')
             self.comm.send(
@@ -59,7 +61,7 @@ class Emitter:
         workers_rank = [ rank for rank in range(quantity_of_processes) ]
         workers_rank.remove(Rank.EMITTER.value)
         workers_rank.remove(Rank.COLLECTOR.value)
-        logger.debug(f'Workers rank {str(workers_rank)}')
+        logger.debug(f'Workers rank list: {str(workers_rank)}')
         return workers_rank
 
 

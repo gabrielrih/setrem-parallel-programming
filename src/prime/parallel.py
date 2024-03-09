@@ -25,9 +25,9 @@ class ParallelManager:
         if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
             raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
         me = self.comm.Get_rank()  # who am I?
-        if me == Rank.EMITTER:
+        if me == Rank.EMITTER.value:
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
-        elif me == Rank.COLLECTOR:
+        elif me == Rank.COLLECTOR.value:
             Collector(self.comm).start()
         else:
             Worker(self.comm, me).start()
@@ -69,11 +69,13 @@ class Collector:
         self._primer_numbers = list()
 
     def start(self):
+        logger.info(f'Starting the collector')
         # While / listening
         # Receive every single response from workers
         #   and append it to the array.
         # Return the array at the end
         # Problem: How to know when to stop the while?
+        logger.info(f'Finishing the collector')
         pass
 
 

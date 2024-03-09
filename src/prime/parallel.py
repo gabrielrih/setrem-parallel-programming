@@ -1,9 +1,10 @@
 from mpi4py import MPI
 from enum import Enum
-from typing import List, Dict
+from typing import List
 from copy import deepcopy
 
 from src.util.converters import StringConverter
+from src.util.decorators import timeit
 from src.util.logger import Logger
 
 
@@ -97,6 +98,7 @@ class Collector:
         self._primer_numbers = list()
         self._data = Data()
 
+    @timeit
     def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
         logger.debug(f'Starting the collector')

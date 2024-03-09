@@ -12,18 +12,18 @@
 - [Other things](#other-things)
 
 ## Purpose
-O propósito principal deste repositório é implementar um algoritmo que, dado um número inicial, retorna a quantidade de números primes neste intervalo.
+The main purpose is, given an initial number, calculate the quantity of prime numbers in this range.
 
-Exemplo: Dados o número 10, o algoritmo irá retornar que existem 4 números primos até o número 10.
+Example: Given the number 10, the algorithm will return that there are 4 prime numbers until 10.
 
-Este algoritmo possui duas vertentes:
-- Executar de forma sequencial.
-- Executar o código de forma paralela.
+You can run this algorithm:
+- ... in sequential mode
+- ... in paralell mode
 
 
 ## Development stack
 - Python: 3.11
-- Bibliotecas:
+- Libraries:
     - [mpi4py](https://pypi.org/project/mpi4py/)
     - [click](https://pypi.org/project/click/)
 
@@ -36,34 +36,32 @@ We are using the farm pattern.
 
 ## Local testing
 
-Para testes locais estou utilizando basicamente o [pipenv](https://pipenv.pypa.io/en/latest/) para gerar e controlar ambientes virtuais Python de forma isolada (sem necessidade de instalar bibliotecas diretamente na minha máquina).
+I'm using [pipenv](https://pipenv.pypa.io/en/latest/) to create and manage Python virtual environments. It helps us to isolate the libraries and differents Python versions.
 
-Para inicializar o ambiente virtual basta executar:
+To initialize the virtual environment:
 ```sh
 pipenv install -d
 pipenv shell
 ```
 
-Para executar o código de forma __sequencial__ execute:
+To run code using __sequential mode__:
 ```sh
 python app.py --mode sequential --until-number 1000
 ```
 
-> Onde 1000 representa até que número devemos procurar pelos números primos
+> Where 1000 represents the max number to look for prime numbers.
 
-Importante comentar que para o teste paralelo é necessário utilizar o [OpenMPI](https://www.open-mpi.org/) e caso você esteja utilizando Windows para desenvolver o OpenMPI não irá funcionar, portanto, o teste local somente funciona com o código sequencial. Contudo, mesmo em ambiente Windows é necessário [instalar o Microsoft MPI](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) para evitar erros do Python para a biblioteca mpi4py.
-
-Um erro bastante comum é:
+It's important to comment that to run this code in parallel mode I'm using [OpenMPI](https://www.open-mpi.org/). In case you are using Windows in your development environment, to avoid error you must [install Microsoft MPI](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi). A common error that happen here is:
 ```
 ImportError: DLL load failed while importing MPI: Não foi possível encontrar o módulo especificado.
 ```
 
 
-## Environment testing
+## Testing Environment
 
-Antes de mais nada o ambiente controlado deve ser provisionado. Para mais detalhes das tecnologias utilizadas e de como o ambiente foi configurado você pode [clicar aqui](./OPEN_MPI.md).
+To run this code in a testing environment, we must create this environment. So, before everything just create this environment following [these steps](./ENVIRONMENT.md).
 
-A partir daqui, tudo será feito no __primary__.
+The next steps you must run on __primary__.
 
 You must access the shared folder and clone this repository:
 ```sh

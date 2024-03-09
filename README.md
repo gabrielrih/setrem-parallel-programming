@@ -3,11 +3,13 @@
 ## Index
 - [Purpose](#purpose)
 - [Development stack](#development-stack)
+- [Architecture](#architecture)
 - [Local testing](#local-testing)
 - [Environment testing](#environment-testing)
     - [Running parallel code in the same machine](#running-parallel-code-in-the-same-machine)
     - [Running parallel code in multiple machines](#running-parallel-code-in-multiple-machines)
     - [Running sequential code](#running-sequential-code)
+- [Other things](#other-things)
 
 ## Purpose
 O propósito principal deste repositório é implementar um algoritmo que, dado um número inicial, retorna a quantidade de números primes neste intervalo.
@@ -25,6 +27,12 @@ Este algoritmo possui duas vertentes:
     - [mpi4py](https://pypi.org/project/mpi4py/)
     - [click](https://pypi.org/project/click/)
 
+
+## Architecture
+
+We are using the farm pattern.
+
+![](.pattern.drawio.png)
 
 ## Local testing
 
@@ -93,3 +101,6 @@ Running the sequential code. It uses just a single vCore.
 ```sh
 python app.py --mode sequential --until-number 10000
 ```
+
+## Other things
+[Here](./cpp/CPP.md) you can see some example using C++.

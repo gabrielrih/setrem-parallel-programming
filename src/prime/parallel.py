@@ -86,7 +86,6 @@ class Collector:
             splitted_data = raw_data.split(':')
             number = int(splitted_data[0])
             is_prime = self._converter.string_to_bool(splitted_data[1])
-            print(f'Number: {number} {type(number)} - is_prime {is_prime} {type(is_prime)}')
             # save if it's a prime number
             if is_prime:
                 self._primer_numbers.append(number)

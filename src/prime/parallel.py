@@ -23,22 +23,24 @@ class Signals(Enum):
 class ParallelManager:
     MIN_OF_PROCESSES = 3  # an emitter, an collector and at least one worker
 
-    def __init__(self):
-        self.comm = MPI.COMM_WORLD
+    def __init__(self, comm = MPI.COMM_WORLD):
+        self.comm = comm
         self.quantity_of_processes = self.comm.Get_size()
+        self.me = self.comm.Get_rank()  # who am I?
 
     def run(self, until_number: int):
-        if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
-            raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
-        me = self.comm.Get_rank()  # who am I?
-        if me == Rank.EMITTER.value:
+        if self.me == Rank.EMITTER.value:
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
+                raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
             logger.info(f'Searching quantity of prime numbers until {until_number}')
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
-        elif me == Rank.COLLECTOR.value:
+        elif self.me == Rank.COLLECTOR.value:
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
             quantity = Collector(self.comm).start(until_number)
             logger.info(f'There are {quantity} prime numbers before {until_number}!')
         else:
-            Worker(self.comm, me).start()
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
+            Worker(self.comm, self.me).start()
 
 
 class Data:
@@ -46,7 +48,8 @@ class Data:
 
     @staticmethod
     def serialize(number: int, is_prime: bool) -> str:
-        return f'{str(number)}{str(Data.DELIMITER)}{str(is_prime)}'
+        data = f'{number}{Data.DELIMITER}{is_prime}'
+        return str(data)
 
     @staticmethod
     def deserialize(data: str):

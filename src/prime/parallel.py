@@ -1,6 +1,7 @@
 from mpi4py import MPI
 from enum import Enum
 from typing import List
+from copy import deepcopy
 
 
 from src.util.logger import Logger
@@ -40,11 +41,11 @@ class Emitter:
 
     def start(self, until_number: int):
         logger.info('Starting the emitter')
-        workers_rank = self._workers_rank
+        workers_rank = deepcopy(self._workers_rank)
         number = 2  # starts by two because this is the first prime number
         while number <= until_number:
             if not workers_rank:
-                workers_rank = self._workers_rank  # rotate the rank
+                workers_rank = deepcopy(self._workers_rank)  # rotate the rank
                 logger.debug(f'Charging workers_rank again. {str(workers_rank)}')
             worker = workers_rank.pop()  # remove one element
             logger.info(f'Sending data {str(number)} to {worker =}')

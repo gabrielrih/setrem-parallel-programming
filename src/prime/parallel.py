@@ -47,7 +47,7 @@ class Data:
     DELIMITER = ':'
 
     @staticmethod
-    def serialize(number: int, is_prime: bool) -> str:
+    def serialize(number: str, is_prime: bool) -> str:
         data = f'{number}{Data.DELIMITER}{is_prime}'
         return str(data)
 
@@ -74,9 +74,8 @@ class Emitter:
         while number <= until_number:
             if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
-            data = str(number)
-            logger.debug(f'Sending data {data} to {worker =}')
-            self.comm.send(obj = data, dest = worker)
+            logger.debug(f'Sending data {str(number)} to {worker =}')
+            self.comm.send(obj = str(number), dest = worker)
             number += 1
         # Nothing more to do, it sends a message to the workers to stop processing
         for worker in self._workers_rank:
@@ -115,7 +114,7 @@ class Collector:
             received_responses += 1
         logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')
         logger.debug('Finishing the collector')
-        return len(self.primer_numbers)        
+        return len(self.primer_numbers)
 
 
 class Worker:
@@ -133,11 +132,10 @@ class Worker:
             data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
             if data == Signals.END_SIGNAL.value:
                 break  # It's necessary to break the infinite loop
-            number = int(data)
-            is_prime = Worker.is_prime_number(number)
-            logger.debug(f'I am the worker {str(self.me)}. Is {str(number)} prime? {str(is_prime)}')
+            is_prime = Worker.is_prime_number(number = int(data))
+            logger.debug(f'I am the worker {str(self.me)}. Is {data} prime? {str(is_prime)}')
             # Sending data to collector
-            data = self._data.serialize(number, is_prime)
+            data = self._data.serialize(number = data, is_prime = is_prime)
             self.comm.send(
                 obj = data,
                 dest = Rank.COLLECTOR.value  # target

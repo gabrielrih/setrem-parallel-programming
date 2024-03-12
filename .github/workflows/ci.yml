@@ -33,7 +33,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
   unit_tests:
     runs-on: ubuntu-latest
-    name: Unit tests
+    name: Unit tests / Code coverage
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
@@ -52,8 +52,45 @@ jobs:
           coverage xml
           echo "Code coverage report:"
           coverage report
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          files: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: gabrielrih/setrem-parallel-programming
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: coverage.xml
           path: ./coverage.xml
+  security_scan:
+    runs-on: ubuntu-latest
+    name: Security scan
+    needs: [checks, unit_tests]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          sudo apt install openmpi-bin openmpi-common libopenmpi-dev
+          python -m pip install --upgrade pip
+          if [ -f requirements/common.txt ]; then pip install -r requirements/common.txt; fi
+          if [ -f requirements/dev.txt ]; then pip install -r requirements/dev.txt; fi
+      - name: Vulnerability scan on packages
+        run: |
+          safety check -r requirements/common.txt
+      - name: Vulnerability scan on dev packages
+        run: |
+          safety check -r requirements/dev.txt
+      - name: Download artifact coverage.xml
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage.xml
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

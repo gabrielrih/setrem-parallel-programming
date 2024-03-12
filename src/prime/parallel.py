@@ -23,22 +23,24 @@ class Signals(Enum):
 class ParallelManager:
     MIN_OF_PROCESSES = 3  # an emitter, an collector and at least one worker
 
-    def __init__(self):
-        self.comm = MPI.COMM_WORLD
+    def __init__(self, comm = MPI.COMM_WORLD):
+        self.comm = comm
         self.quantity_of_processes = self.comm.Get_size()
+        self.me = self.comm.Get_rank()  # who am I?
 
     def run(self, until_number: int):
-        if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
-            raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
-        me = self.comm.Get_rank()  # who am I?
-        if me == Rank.EMITTER.value:
+        if self.me == Rank.EMITTER.value:
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
+                raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
             logger.info(f'Searching quantity of prime numbers until {until_number}')
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
-        elif me == Rank.COLLECTOR.value:
+        elif self.me == Rank.COLLECTOR.value:
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
             quantity = Collector(self.comm).start(until_number)
             logger.info(f'There are {quantity} prime numbers before {until_number}!')
         else:
-            Worker(self.comm, me).start()
+            if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
+            Worker(self.comm, self.me).start()
 
 
 class Data:
@@ -46,7 +48,8 @@ class Data:
 
     @staticmethod
     def serialize(number: int, is_prime: bool) -> str:
-        return f'{str(number)}{str(Data.DELIMITER)}{str(is_prime)}'
+        data = f'{number}{Data.DELIMITER}{is_prime}'
+        return str(data)
 
     @staticmethod
     def deserialize(data: str):
@@ -95,23 +98,24 @@ class Emitter:
 class Collector:
     def __init__(self, comm):
         self.comm = comm
-        self._primer_numbers = list()
+        self.primer_numbers = list()
         self._data = Data()
 
     @timeit
     def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
-        logger.debug(f'Starting the collector')
+        logger.debug('Starting the collector')
         expected_responses = until_number - 1
         received_responses = 0
         while received_responses < expected_responses:
             raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
             number, is_prime = self._data.deserialize(raw_data)
-            if is_prime: self._primer_numbers.append(number)
+            if is_prime:
+                self.primer_numbers.append(number)
             received_responses += 1
-        logger.debug(f'The prime numbers are: {str(self._primer_numbers)}')
-        logger.debug(f'Finishing the collector')
-        return len(self._primer_numbers)        
+        logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')
+        logger.debug('Finishing the collector')
+        return len(self.primer_numbers)        
 
 
 class Worker:
@@ -119,6 +123,7 @@ class Worker:
         self.comm = comm
         self.me = me
         self._data = Data()
+        self.numbers_processed = 0
 
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
@@ -126,7 +131,8 @@ class Worker:
         while True:
             # Receive and process data
             data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
-            if data == Signals.END_SIGNAL.value: break  # It's necessary to break the infinite loop
+            if data == Signals.END_SIGNAL.value:
+                break  # It's necessary to break the infinite loop
             number = int(data)
             is_prime = Worker.is_prime_number(number)
             logger.debug(f'I am the worker {str(self.me)}. Is {str(number)} prime? {str(is_prime)}')
@@ -136,6 +142,7 @@ class Worker:
                 obj = data,
                 dest = Rank.COLLECTOR.value  # target
             )
+            self.numbers_processed += 1
         logger.debug(f'Finishing the worker {str(self.me)}')
 
     @staticmethod

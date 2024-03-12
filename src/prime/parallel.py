@@ -104,7 +104,7 @@ class Collector:
     @timeit
     def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
-        logger.debug(f'Starting the collector')
+        logger.debug('Starting the collector')
         expected_responses = until_number - 1
         received_responses = 0
         while received_responses < expected_responses:
@@ -114,7 +114,7 @@ class Collector:
                 self.primer_numbers.append(number)
             received_responses += 1
         logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')
-        logger.debug(f'Finishing the collector')
+        logger.debug('Finishing the collector')
         return len(self.primer_numbers)        
 
 

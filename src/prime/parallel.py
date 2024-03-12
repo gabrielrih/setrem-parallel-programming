@@ -64,6 +64,7 @@ class Emitter:
         self.comm = comm
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
 
+    @timeit
     def start(self, until_number: int):
         ''' Send work for the workers '''
         logger.debug('Starting the emitter')
@@ -101,7 +102,6 @@ class Collector:
         self.primer_numbers = list()
         self._data = Data()
 
-    @timeit
     def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
         logger.debug('Starting the collector')

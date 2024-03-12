@@ -98,7 +98,7 @@ class Emitter:
 class Collector:
     def __init__(self, comm):
         self.comm = comm
-        self._primer_numbers = list()
+        self.primer_numbers = list()
         self._data = Data()
 
     @timeit
@@ -110,11 +110,12 @@ class Collector:
         while received_responses < expected_responses:
             raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
             number, is_prime = self._data.deserialize(raw_data)
-            if is_prime: self._primer_numbers.append(number)
+            if is_prime:
+                self.primer_numbers.append(number)
             received_responses += 1
-        logger.debug(f'The prime numbers are: {str(self._primer_numbers)}')
+        logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')
         logger.debug(f'Finishing the collector')
-        return len(self._primer_numbers)        
+        return len(self.primer_numbers)        
 
 
 class Worker:
@@ -122,6 +123,7 @@ class Worker:
         self.comm = comm
         self.me = me
         self._data = Data()
+        self.numbers_processed = 0
 
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
@@ -129,7 +131,8 @@ class Worker:
         while True:
             # Receive and process data
             data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
-            if data == Signals.END_SIGNAL.value: break  # It's necessary to break the infinite loop
+            if data == Signals.END_SIGNAL.value:
+                break  # It's necessary to break the infinite loop
             number = int(data)
             is_prime = Worker.is_prime_number(number)
             logger.debug(f'I am the worker {str(self.me)}. Is {str(number)} prime? {str(is_prime)}')
@@ -139,6 +142,7 @@ class Worker:
                 obj = data,
                 dest = Rank.COLLECTOR.value  # target
             )
+            self.numbers_processed += 1
         logger.debug(f'Finishing the worker {str(self.me)}')
 
     @staticmethod

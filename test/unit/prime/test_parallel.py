@@ -9,7 +9,11 @@ from src.prime.parallel import \
     Worker, \
     Rank
 
-from test.mock.mpi import DummyMPI
+from test.mock.mpi import \
+    DummyMPIForManager, \
+    DummyMPIForEmitter, \
+    DummyMPIForCollector, \
+    DummyMPIForWorker
 
 
 class TestParallelManager(TestCase):
@@ -22,7 +26,7 @@ class TestParallelManager(TestCase):
             'processes': 1,
             'rank': Rank.EMITTER.value
         }
-        manager = ParallelManager(comm = DummyMPI(parameters))
+        manager = ParallelManager(comm = DummyMPIForManager(parameters))
         with raises(ValueError):
             manager.run(
                 until_number = 10  # it doesn't matter the number here 
@@ -38,7 +42,7 @@ class TestParallelManager(TestCase):
 
         # When
         manager = ParallelManager(
-            comm = DummyMPI(parameters)
+            comm = DummyMPIForManager(parameters)
         )
         manager.run(until_number = 5)  # it doesn't matter the number here
 
@@ -57,7 +61,7 @@ class TestParallelManager(TestCase):
 
         # When
         manager = ParallelManager(
-            comm = DummyMPI(parameters)
+            comm = DummyMPIForManager(parameters)
         )
         manager.run(until_number = 5)  # it doesn't matter the number here
 
@@ -76,7 +80,7 @@ class TestParallelManager(TestCase):
 
         # When
         manager = ParallelManager(
-            comm = DummyMPI(parameters)
+            comm = DummyMPIForManager(parameters)
         )
         manager.run(until_number = 5)  # it doesn't matter the number here
 
@@ -108,12 +112,22 @@ class TestEmitter(TestCase):
         )
         self.assertEqual(workers_rank, expected_workers_rank)
 
-    # mock here?
     def test_start(self):
-        pass
+        comm = DummyMPIForEmitter()
+        emitter = Emitter(comm, 3)
+        emitter.start(2)
+
 
 class TestCollector(TestCase):
-    pass
+    def test_start(self):
+        collector = Collector(
+            comm = DummyMPIForCollector()
+        )
+        prime_number_quantity = collector.start(
+            until_number = 5
+        )
+        #  The number 4 is not real, we are just simulating.
+        self.assertEqual(prime_number_quantity, 4)
 
 
 class TestWorker(TestCase):
@@ -129,6 +143,7 @@ class TestWorker(TestCase):
         )
         self.assertFalse(is_prime)
 
-    # mock here
     def test_start(self):
-        pass
+        worker = Worker(comm = DummyMPIForWorker(), me = 1)
+        worker.start()
+        self.assertEqual(worker.numbers_processed, 2)

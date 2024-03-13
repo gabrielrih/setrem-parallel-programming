@@ -75,7 +75,8 @@ class Emitter:
             if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
             logger.debug(f'Sending data {str(number)} to {worker =}')
-            self.comm.send(obj = str(number), dest = worker)
+            if req: req.wait()
+            req = self.comm.isend(obj = str(number), dest = worker)
             number += 1
         # Nothing more to do, it sends a message to the workers to stop processing
         for worker in self._workers_rank:
@@ -136,7 +137,8 @@ class Worker:
             logger.debug(f'I am the worker {str(self.me)}. Is {data} prime? {str(is_prime)}')
             # Sending data to collector
             data = self._data.serialize(number = data, is_prime = is_prime)
-            self.comm.send(
+            if req: req.wait()
+            req = self.comm.isend(
                 obj = data,
                 dest = Rank.COLLECTOR.value  # target
             )

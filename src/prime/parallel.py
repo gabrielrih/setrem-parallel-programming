@@ -28,7 +28,7 @@ class ParallelManager:
         self.quantity_of_processes = self.comm.Get_size()
         self.me = self.comm.Get_rank()  # who am I?
 
-    @profileit
+    #@profileit
     def run(self, until_number: int):
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
@@ -71,15 +71,18 @@ class Emitter:
         logger.debug('Starting the emitter')
         # While there are numbers to check, send work to workers
         workers_rank = copy(self._workers_rank)
-        number = 2  # starts by two because this is the first prime number
+        from_number = 2  # starts by two because this is the first prime number
         req = None
-        while number <= until_number:
+        while from_number <= until_number:
             if not workers_rank: workers_rank = copy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
-            logger.debug(f'Sending data {str(number)} to {worker =}')
+            # FIX IT: tratar valores exatos
+            to_number = from_number + 10  # send data 10 by 10 (to reduce overhead)
+            data = f'{from_number}:{to_number}'
+            logger.debug(f'Sending data {str(data)} to {worker =}')
             if req: req.wait()
-            req = self.comm.isend(obj = str(number), dest = worker)
-            number += 1
+            req = self.comm.isend(obj = data, dest = worker)
+            from_number += 1
         # Nothing more to do, it sends a message to the workers to stop processing
         for worker in self._workers_rank:
             logger.debug(f'Sending end_signal to worker {worker}')
@@ -135,19 +138,26 @@ class Worker:
         req = None
         while True:
             # Receive and process data
-            data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
-            if data == Signals.END_SIGNAL.value:
+            raw_data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
+            if raw_data == Signals.END_SIGNAL.value:
                 break  # It's necessary to break the infinite loop
-            is_prime = Worker.is_prime_number(number = int(data))
-            logger.debug(f'I am the worker {str(self.me)}. Is {data} prime? {str(is_prime)}')
-            # Sending data to collector
-            data = self._data.serialize(number = data, is_prime = is_prime)
-            if req: req.wait()
-            req = self.comm.isend(
-                obj = data,
-                dest = Rank.COLLECTOR.value  # target
-            )
-            self.numbers_processed += 1
+
+            spplited = raw_data.split(':')
+            from_number = int(spplited[0])
+            to_number = int(spplited[1])
+
+            while from_number <= to_number:
+                is_prime = Worker.is_prime_number(number = from_number)
+                logger.debug(f'I am the worker {str(self.me)}. Is {str(from_number)} prime? {str(is_prime)}')
+                # Sending data to collector
+                data = self._data.serialize(number = data, is_prime = is_prime)
+                if req: req.wait()
+                req = self.comm.isend(
+                    obj = data,
+                    dest = Rank.COLLECTOR.value  # target
+                )
+                from_number += 1
+                self.numbers_processed += 1
         logger.debug(f'Finishing the worker {str(self.me)}')
 
     @staticmethod

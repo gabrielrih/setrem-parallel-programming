@@ -2,10 +2,9 @@ from mpi4py import MPI
 from enum import Enum
 from typing import List
 from copy import deepcopy
-from pyinstrument import Profiler
 
 from src.util.converters import StringConverter
-from src.util.decorators import timeit
+from src.util.decorators import timeit, profileit
 from src.util.logger import Logger
 
 
@@ -29,9 +28,8 @@ class ParallelManager:
         self.quantity_of_processes = self.comm.Get_size()
         self.me = self.comm.Get_rank()  # who am I?
 
+    @profileit
     def run(self, until_number: int):
-        profiler = Profiler()
-        profiler.start()
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
                 raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
@@ -44,8 +42,6 @@ class ParallelManager:
         else:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
             Worker(self.comm, self.me).start()
-        profiler.stop()
-        print(profiler.output_text(unicode=True, color=True))
 
 
 class Data:

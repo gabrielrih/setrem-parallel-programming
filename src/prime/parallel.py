@@ -64,6 +64,7 @@ class Emitter:
     def __init__(self, comm, quantity_of_processes: int):
         self.comm = comm
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
+        self._batch = 10
 
     @timeit
     def start(self, until_number: int):
@@ -76,13 +77,14 @@ class Emitter:
         while from_number <= until_number:
             if not workers_rank: workers_rank = copy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
-            # FIX IT: tratar valores exatos
-            to_number = from_number + 10  # send data 10 by 10 (to reduce overhead)
+            to_number = from_number + self._batch  # send data 10 by 10 (to reduce overhead)
+            if to_number > until_number:
+                to_number = until_number
             data = f'{from_number}:{to_number}'
-            logger.debug(f'Sending data {str(data)} to {worker =}')
+            logger.info(f'Sending data {str(data)} to {worker =}')
             if req: req.wait()
             req = self.comm.isend(obj = data, dest = worker)
-            from_number += 1
+            from_number += self._batch + 1
         # Nothing more to do, it sends a message to the workers to stop processing
         for worker in self._workers_rank:
             logger.debug(f'Sending end_signal to worker {worker}')

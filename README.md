@@ -104,7 +104,23 @@ python app.py --mode sequential --until-number 10000
 
 ## Performance tests
 
-COLOCAR AQUI
+### Speeup
+O gráfico de speedup normalmente é por vCore, porém, no nosso caso, dois vCores são somente para o emitter e o collector que na prática não melhoram performance. Nesse caso, fazer o gráfico por worker (começando de 1 e indo até 3) (que foi o que eu consegui testar). No valor de 1 o speedup vai ser "negativo", porque na verdade perdemos performance. Comentar o porquê disso.
+
+Testar speedup em cluster também? Corrigir o problema que estamos tendo.
+
+### Communication overhead
+Falar aqui de quando testamos enviando os números de 1 por 1 para o worker. Nesse caso, mesmo aumentando os workers, o tempo final era ainda mais alto que do código sequencial (ver detalhes na aba v1 do excel). Comentar que o problema era overhead de comunicação. Assim que começamos a enviar os dados por lote (padrão 50) é que começamos a ganhar performance na execução.
+
+- Enviando os dados um a um tivemos muito overhead e o tempo inclusive aumentou nos testes.
+O tempo do processamento paralelo com um worker aumentou em cerca de 30% em comparação ao código sequencial.
+Ainda, colocando mais worker o tempo aumentava ainda mais.
+
+Resolvemos esta situação de overhead de comunicação enviando os dados por lote. Ou seja, ao invés de dizer que quero saber se o número X é primo, eu envio para o worker pedindo para calcular se os números de X até Y são primos.
+
+### List of tests
+
+Adicionar aqui a lista completa dos tests.
 
 
 ## Other things

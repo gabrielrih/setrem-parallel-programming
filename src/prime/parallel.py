@@ -103,6 +103,7 @@ class Collector:
         self.primer_numbers = list()
         self._data = Data()
 
+    @timeit
     def start(self, until_number: int) -> int:
         ''' Receive all answers from workers and append the prime numbers '''
         logger.debug('Starting the collector')
@@ -126,6 +127,7 @@ class Worker:
         self._data = Data()
         self.numbers_processed = 0
 
+    @timeit
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
         logger.debug(f'Starting the worker {str(self.me)}')

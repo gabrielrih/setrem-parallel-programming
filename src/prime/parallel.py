@@ -29,11 +29,11 @@ class ParallelManager:
         self.me = self.comm.Get_rank()  # who am I?
 
     #@profileit
-    def run(self, until_number: int):
+    def run(self, until_number: int, batch_size: int = 10):
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
                 raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
-            logger.info(f'Searching quantity of prime numbers until {until_number}')
+            logger.info(f'Searching quantity of prime numbers until {until_number} ({batch_size =})')
             Emitter(self.comm, self.quantity_of_processes).start(until_number)
         elif self.me == Rank.COLLECTOR.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
@@ -77,10 +77,10 @@ class NumbersSerializer:
 
 
 class Emitter:
-    def __init__(self, comm, quantity_of_processes: int):
+    def __init__(self, comm, quantity_of_processes: int, batch_size: int):
         self.comm = comm
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
-        self._batch = 10  # using batch reduce the communication overhead
+        self._batch_size = batch_size  # using it to reduce the communication overhead
         self._serializer = NumbersSerializer()
 
     @timeit
@@ -94,7 +94,7 @@ class Emitter:
         while from_number <= until_number:
             if not workers_rank: workers_rank = copy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
-            to_number = from_number + self._batch
+            to_number = from_number + self._batch_size
             if to_number > until_number: to_number = until_number
             data = self._serializer.serialize(from_number, to_number)
             logger.debug(f'Sending data {data} to {worker =}')

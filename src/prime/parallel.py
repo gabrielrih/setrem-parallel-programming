@@ -71,6 +71,7 @@ class Emitter:
         # While there are numbers to check, send work to workers
         workers_rank = deepcopy(self._workers_rank)
         number = 2  # starts by two because this is the first prime number
+        req = None
         while number <= until_number:
             if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
@@ -128,6 +129,7 @@ class Worker:
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
         logger.debug(f'Starting the worker {str(self.me)}')
+        req = None
         while True:
             # Receive and process data
             data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data

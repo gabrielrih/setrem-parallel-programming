@@ -137,6 +137,7 @@ class Collector:
             if is_prime:
                 self.primer_numbers.append(number)
             received_responses += 1
+            logger.info(f'Quantity received on collector: {received_responses}')
         logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')
         logger.debug('Finishing the collector')
         return len(self.primer_numbers)

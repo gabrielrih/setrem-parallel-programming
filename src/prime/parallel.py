@@ -150,7 +150,7 @@ class Worker:
                 is_prime = Worker.is_prime_number(number = from_number)
                 logger.debug(f'I am the worker {str(self.me)}. Is {str(from_number)} prime? {str(is_prime)}')
                 # Sending data to collector
-                data = self._data.serialize(number = data, is_prime = is_prime)
+                data = self._data.serialize(number = int(from_number), is_prime = is_prime)
                 if req: req.wait()
                 req = self.comm.isend(
                     obj = data,

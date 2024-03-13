@@ -148,8 +148,8 @@ class Worker:
         self.comm = comm
         self.me = me
         self.numbers_processed = 0
-        self._emitter_serializer = IsPrimeSerializer()
-        self._collector_serializer = NumbersSerializer()
+        self._emitter_serializer = NumbersSerializer()
+        self._collector_serializer = IsPrimeSerializer()
 
     @timeit
     def start(self):

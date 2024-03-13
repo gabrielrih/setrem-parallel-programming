@@ -28,7 +28,6 @@ class ParallelManager:
         self.quantity_of_processes = self.comm.Get_size()
         self.me = self.comm.Get_rank()  # who am I?
 
-    #@profileit
     def run(self, until_number: int, batch_size: int = 10):
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
@@ -83,7 +82,6 @@ class Emitter:
         self._batch_size = batch_size  # using it to reduce the communication overhead
         self._serializer = NumbersSerializer()
 
-    @timeit
     def start(self, until_number: int):
         ''' Send work for the workers '''
         logger.debug('Starting the emitter')
@@ -150,7 +148,6 @@ class Worker:
         self._emitter_serializer = NumbersSerializer()
         self._collector_serializer = IsPrimeSerializer()
 
-    @timeit
     def start(self):
         ''' Receive numbers and return if it is prime or not '''
         logger.debug(f'Starting the worker {str(self.me)}')

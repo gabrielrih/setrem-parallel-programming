@@ -81,7 +81,7 @@ class Emitter:
             if to_number > until_number:
                 to_number = until_number
             data = f'{from_number}:{to_number}'
-            logger.info(f'Sending data {str(data)} to {worker =}')
+            logger.debug(f'Sending data {str(data)} to {worker =}')
             if req: req.wait()
             req = self.comm.isend(obj = data, dest = worker)
             from_number += self._batch + 1

@@ -7,18 +7,18 @@ command="mpirun -np $processes python app.py --mode parallel --until-number $unt
 echo "Running: $command"
 
 echo "Try 1"
-$command > /tmp/result.txt
+$command
 
 echo "Try 2"
-$command > /tmp/result.txt
+$command
 
 echo "Try 3"
-$command > /tmp/result.txt
+$command
 
 echo "Try 4"
-$command > /tmp/result.txt
+$command
 
 echo "Try 5"
-$command > /tmp/result.txt
+$command
 
 exit 0

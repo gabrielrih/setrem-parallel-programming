@@ -34,7 +34,7 @@ class ParallelManager:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
                 raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')
             logger.info(f'Searching quantity of prime numbers until {until_number} ({batch_size =})')
-            Emitter(self.comm, self.quantity_of_processes).start(until_number)
+            Emitter(self.comm, self.quantity_of_processes, batch_size).start(until_number)
         elif self.me == Rank.COLLECTOR.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES: return
             quantity = Collector(self.comm).start(until_number)

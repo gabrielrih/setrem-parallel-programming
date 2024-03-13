@@ -3,7 +3,8 @@ from pytest import raises
 
 from src.prime.parallel import \
     ParallelManager, \
-    Data, \
+    IsPrimeSerializer, \
+    NumbersSerializer, \
     Emitter, \
     Collector, \
     Worker, \
@@ -90,18 +91,34 @@ class TestParallelManager(TestCase):
         self.assertEqual(manager.me, 2)
 
 
-class TestData(TestCase):
+class TestIsPrimeSerializer(TestCase):
     def test_serialize(self):
         expected_serialized_data = '10:False'
-        data = Data.serialize(10, False)
+        data = IsPrimeSerializer.serialize(10, False)
         self.assertEqual(data, expected_serialized_data)
         self.assertIsInstance(data, str)
 
     def test_deserialize(self):
         data = '3:True'
-        number, is_prime = Data.deserialize(data)
+        number, is_prime = IsPrimeSerializer.deserialize(data)
         self.assertEqual(number, 3)
         self.assertEqual(is_prime, True)
+
+
+class TestNumbersSerializer(TestCase):
+    def test_serialize(self):
+        expected_serialized_data = '2:12'
+        data = NumbersSerializer.serialize(
+            from_number = 2,
+            to_number = 12)
+        self.assertEqual(data, expected_serialized_data)
+        self.assertIsInstance(data, str)
+
+    def test_deserialize(self):
+        data = '2:12'
+        from_number, to_number = NumbersSerializer.deserialize(data)
+        self.assertEqual(from_number, 2)
+        self.assertEqual(to_number, 12)
 
 
 class TestEmitter(TestCase):
@@ -114,7 +131,10 @@ class TestEmitter(TestCase):
 
     def test_start(self):
         comm = DummyMPIForEmitter()
-        emitter = Emitter(comm, 3)
+        emitter = Emitter(
+            comm,
+            quantity_of_processes = 3,
+            batch_size = 50)
         emitter.start(2)
 
 
@@ -137,7 +157,7 @@ class TestWorker(TestCase):
         )
         self.assertTrue(is_prime)
 
-    def test_when_the_number_isnt_prime(self):
+    def test_when_the_number_is_not_prime(self):
         is_prime = Worker.is_prime_number(
             30
         )
@@ -146,4 +166,4 @@ class TestWorker(TestCase):
     def test_start(self):
         worker = Worker(comm = DummyMPIForWorker(), me = 1)
         worker.start()
-        self.assertEqual(worker.numbers_processed, 2)
+        self.assertEqual(worker.numbers_processed, 29)

@@ -19,7 +19,7 @@ logger = Logger.get_logger(__name__)
               help='Until which number calculate the quantity of prime numbers')
 @click.option('--batch-size',
               type=click.INT,
-              default=10,
+              default=50,
               required=False,
               help='Batch size to reduce communication overhead (just on parallel mode)')
 

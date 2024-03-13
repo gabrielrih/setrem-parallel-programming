@@ -1,7 +1,6 @@
 import time
 
 from functools import wraps
-from pyinstrument import Profiler
 
 from src.util.logger import Logger
 
@@ -19,15 +18,3 @@ def timeit(func):
         logger.info(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
         return result
     return timeit_wrapper
-
-
-def profileit(func):
-    @wraps(func)
-    def profileit_wrapper(*args, **kwargs):
-        profiler = Profiler()
-        profiler.start()
-        result = func(*args, **kwargs)
-        profiler.stop()
-        print(profiler.output_text(unicode=True, color=True))
-        return result
-    return profileit_wrapper

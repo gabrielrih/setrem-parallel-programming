@@ -97,7 +97,7 @@ class Emitter:
             to_number = from_number + self._batch
             if to_number > until_number: to_number = until_number
             data = self._serializer.serialize(from_number, to_number)
-            logger.info(f'Sending data {data} to {worker =}')
+            logger.debug(f'Sending data {data} to {worker =}')
             if req: req.wait()
             req = self.comm.isend(obj = data, dest = worker)
             from_number = to_number + 1

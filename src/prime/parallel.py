@@ -44,27 +44,44 @@ class ParallelManager:
             Worker(self.comm, self.me).start()
 
 
-class Data:
+class IsPrimeSerializer:
     DELIMITER = ':'
 
     @staticmethod
     def serialize(number: str, is_prime: bool) -> str:
-        data = f'{number}{Data.DELIMITER}{is_prime}'
+        data = f'{number}{IsPrimeSerializer.DELIMITER}{is_prime}'
         return str(data)
 
     @staticmethod
     def deserialize(data: str):
-        raw_data = data.split(Data.DELIMITER)
+        raw_data = data.split(IsPrimeSerializer.DELIMITER)
         number = int(raw_data[0])
         is_prime = StringConverter.string_to_bool(raw_data[1])
         return number, is_prime
+
+
+class NumbersSerializer:
+    DELIMITER = ':'
+
+    @staticmethod
+    def serialize(from_number: int, to_number: int) -> str:
+        data = f'{from_number}{NumbersSerializer.DELIMITER}{to_number}'
+        return str(data)
+
+    @staticmethod
+    def deserialize(data: str):
+        raw_data = data.split(NumbersSerializer.DELIMITER)
+        from_number = int(raw_data[0])
+        to_number = int(raw_data[1])
+        return from_number, to_number
 
 
 class Emitter:
     def __init__(self, comm, quantity_of_processes: int):
         self.comm = comm
         self._workers_rank = Emitter.get_workers_rank(quantity_of_processes)
-        self._batch = 10
+        self._batch = 10  # using batch reduce the communication overhead
+        self._serializer = NumbersSerializer()
 
     @timeit
     def start(self, until_number: int):
@@ -77,14 +94,13 @@ class Emitter:
         while from_number <= until_number:
             if not workers_rank: workers_rank = copy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
-            to_number = from_number + self._batch  # send data 10 by 10 (to reduce overhead)
-            if to_number > until_number:
-                to_number = until_number
-            data = f'{from_number}:{to_number}'
-            logger.debug(f'Sending data {str(data)} to {worker =}')
+            to_number = from_number + self._batch
+            if to_number > until_number: to_number = until_number
+            data = self._serializer.serialize(from_number, to_number)
+            logger.info(f'Sending data {data} to {worker =}')
             if req: req.wait()
             req = self.comm.isend(obj = data, dest = worker)
-            from_number += self._batch + 1
+            from_number = to_number + 1
         # Nothing more to do, it sends a message to the workers to stop processing
         for worker in self._workers_rank:
             logger.debug(f'Sending end_signal to worker {worker}')
@@ -107,7 +123,7 @@ class Collector:
     def __init__(self, comm):
         self.comm = comm
         self.primer_numbers = list()
-        self._data = Data()
+        self._serializer = IsPrimeSerializer()
 
     @timeit
     def start(self, until_number: int) -> int:
@@ -117,7 +133,7 @@ class Collector:
         received_responses = 0
         while received_responses < expected_responses:
             raw_data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
-            number, is_prime = self._data.deserialize(raw_data)
+            number, is_prime = self._serializer.deserialize(data = raw_data)
             if is_prime:
                 self.primer_numbers.append(number)
             received_responses += 1
@@ -130,8 +146,9 @@ class Worker:
     def __init__(self, comm, me):
         self.comm = comm
         self.me = me
-        self._data = Data()
         self.numbers_processed = 0
+        self._emitter_serializer = IsPrimeSerializer()
+        self._collector_serializer = NumbersSerializer()
 
     @timeit
     def start(self):
@@ -140,19 +157,19 @@ class Worker:
         req = None
         while True:
             # Receive and process data
-            raw_data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
-            if raw_data == Signals.END_SIGNAL.value:
+            data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
+            if data == Signals.END_SIGNAL.value:
                 break  # It's necessary to break the infinite loop
-
-            spplited = raw_data.split(':')
-            from_number = int(spplited[0])
-            to_number = int(spplited[1])
+            from_number, to_number = self._emitter_serializer.deserialize(data)
 
             while from_number <= to_number:
                 is_prime = Worker.is_prime_number(number = from_number)
                 logger.debug(f'I am the worker {str(self.me)}. Is {str(from_number)} prime? {str(is_prime)}')
                 # Sending data to collector
-                data = self._data.serialize(number = int(from_number), is_prime = is_prime)
+                data = self._collector_serializer.serialize(
+                    number = int(from_number),
+                    is_prime = is_prime
+                )
                 if req: req.wait()
                 req = self.comm.isend(
                     obj = data,

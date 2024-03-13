@@ -1,7 +1,7 @@
 from mpi4py import MPI
 from enum import Enum
 from typing import List
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from src.util.converters import StringConverter
 from src.util.decorators import timeit, profileit
@@ -70,11 +70,11 @@ class Emitter:
         ''' Send work for the workers '''
         logger.debug('Starting the emitter')
         # While there are numbers to check, send work to workers
-        workers_rank = deepcopy(self._workers_rank)
+        workers_rank = copy(self._workers_rank)
         number = 2  # starts by two because this is the first prime number
         req = None
         while number <= until_number:
-            if not workers_rank: workers_rank = deepcopy(self._workers_rank)  # rotate the rank
+            if not workers_rank: workers_rank = copy(self._workers_rank)  # rotate the rank
             worker = workers_rank.pop()
             logger.debug(f'Sending data {str(number)} to {worker =}')
             if req: req.wait()

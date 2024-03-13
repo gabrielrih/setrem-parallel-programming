@@ -17,13 +17,18 @@ logger = Logger.get_logger(__name__)
               type=click.INT,
               required=True,
               help='Until which number calculate the quantity of prime numbers')
+@click.option('--batch-size',
+              type=click.INT,
+              default=50,
+              required=False,
+              help='Batch size to reduce communication overhead (just on parallel mode)')
 
 
-def run(mode: str, until_number: int) -> None:
+def run(mode: str, until_number: int, batch_size: int) -> None:
     if mode == 'sequential':
         SequentialManager().run(until_number)
         return
-    ParallelManager().run(until_number)
+    ParallelManager().run(until_number, batch_size)
 
 
 if __name__ == '__main__':

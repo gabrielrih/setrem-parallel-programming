@@ -23,6 +23,12 @@ class DummyMPIForManager:
 class DummyMPIForEmitter:
     def send(self, *args, **kwargs):
         return None  # do nothing here
+    
+    def isend(self, *args, **kwargs):
+        return None  # do nothing here
+    
+    def wait(self, *args, **kwargs):
+        return None  # do nothing here
 
 
 class DummyMPIForCollector:
@@ -37,15 +43,25 @@ class DummyMPIForWorker:
     def send(self, *args, **kwargs):
         return None  # do nothing here
 
+    def isend(self, *args, **kwargs):
+        return None  # do nothing here
+    
+    def wait(self, *args, **kwargs):
+        return None  # do nothing here
+    
     def recv(self, *args, **kwargs) -> any:
-        # First message, simulating that the worker must calculate if three is a number
+        # First message, simulating that the worker must calculate the range 2:12
         if self._received_messages == 0:
             self._received_messages += 1
-            return 3
-        # Second message, simulating that the worker must calculate if four is a number
+            return '2:12'
+        # Second message, simulating that the worker must calculate the range 13:23
         if self._received_messages == 1:
             self._received_messages += 1
-            return 4
+            return '13:23'
+        # Third message, simulating that the worker must calculate the range 13:23
+        if self._received_messages == 2:
+            self._received_messages += 1
+            return '24:30'
         
         # Last message, sending the end signal to stop doing the work
         return Signals.END_SIGNAL.value

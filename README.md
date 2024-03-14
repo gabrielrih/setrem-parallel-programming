@@ -9,7 +9,10 @@
     - [Running parallel code in multiple machines](#running-parallel-code-in-multiple-machines)
     - [Running sequential code](#running-sequential-code)
 - [Performance tests](#performance-tests)
-- [Other things](#other-things)
+    - [Speedup](#speedup)
+    - [Communication overhead](#communication-overhead)
+    - [Full report](#full-report)
+- [What is next](#what-is-next)
 
 ## Purpose
 Given an initial number, the main purpose of this automation is to calculate the quantity of prime numbers in this range.
@@ -104,24 +107,45 @@ python app.py --mode sequential --until-number 10000
 
 ## Performance tests
 
-### Speeup
-O gráfico de speedup normalmente é por vCore, porém, no nosso caso, dois vCores são somente para o emitter e o collector que na prática não melhoram performance. Nesse caso, fazer o gráfico por worker (começando de 1 e indo até 3) (que foi o que eu consegui testar). No valor de 1 o speedup vai ser "negativo", porque na verdade perdemos performance. Comentar o porquê disso.
+I ran performance tests using the sequential and the parallel mode. All the tests were performed on the __primary__ node in the testing environment previously created.
 
-Testar speedup em cluster também? Corrigir o problema que estamos tendo.
+In theory, if the process took 10 seconds to run in sequential mode, if you have two processes it would take half of that, which is 5 seconds; if you have three processes it would take one third of that, 3.3 seconds; and so one and so far. But, in real world it's not posible for many reasons. One of them is that not all of your code is parallel, there would always be some parts that will continue runinng sequentially. Other reasons could be hardware limitation, memory usage, networking and more.
+
+### Speedup
+When you run a code sequentially, using a single vCore, it would take an amount of time to finish it. When you run your code in parallel, using two or more vCores, it would probably take a different amount of time. The division by this two times will generates the speedup ([click here for more details](https://en.wikipedia.org/wiki/Amdahl%27s_law)).
+
+$$ S = {T(1) \over T(N)} $$
+
+> Where T(1) is the amount of time it takes to run sequentially and T(N) is the amount of time is takes to run in parallel (N is the number of vCores used).
+
+The speedup graphic is normally presents by vCores, however, using the farm pattern, two of the vCores are used by emitter and collector and it does not have parallel code. This way, it makes more sense to generate the graphic by the number os workers and not the total of vCores used. In a simple example, if it's using four vCores, just two of them would be workers (parallel code).
+
+The tests were divided into three categories and the same test in each category was ran five times.
+- The first category was to generate prime numbers until 30,000.
+- The second, until 50,000.
+- And the last one, until 100,000.
+
+Them, I calculate the average of time it took in each category and them I calculated the speedup in each category using this average time.
+
+The final speedup was the average of speedup in all categories.
+
+![](.docs/img/speedup_graphic.png)
+
+As you can see in the graphic, when I used just a single worker, in fact the speedup was less than one. It means, using a single worker it is slower than running it in sequential mode. In fact, it was surprising for me, because I thought the division of work between emitter, collector and worker, would be enough to improve the performance. The reason of that probably is the comunication overhead and the complex code.
+
+However, from two workers the performance is improved by 24%. And using three workers the performance gets even better, 55%. This is really interesting because we are increasing the number of workers and the performance increases more and more. It would be also interesting to calculate the limitation of this approach, which means, what is the maximum of workers I can have where performance still increases? Note that probably in a certain number of workers the performance would not increase, so this is the maximum scalability you can have (more than that you would probably have to improve the code or scale horizontally).
 
 ### Communication overhead
-Falar aqui de quando testamos enviando os números de 1 por 1 para o worker. Nesse caso, mesmo aumentando os workers, o tempo final era ainda mais alto que do código sequencial (ver detalhes na aba v1 do excel). Comentar que o problema era overhead de comunicação. Assim que começamos a enviar os dados por lote (padrão 50) é que começamos a ganhar performance na execução.
+It's important also comment about communication overhead. The OpenMPI protocol has to establish communication between the processes (emitter, collector and workers). And obviously there is a cost to do that. The first version of the code, I was sending the data from emitter to worker one by one. Using this strategy the parallel code was 30% slower than the sequential mode even using three workers (5 vCores in total). To solve this, I changed this logic to send data in batches of 50 instead of sending one by one. It decrease the communication overhead in 50% and them the parallel code finally took some advantage comparing to the sequential one.
 
-- Enviando os dados um a um tivemos muito overhead e o tempo inclusive aumentou nos testes.
-O tempo do processamento paralelo com um worker aumentou em cerca de 30% em comparação ao código sequencial.
-Ainda, colocando mais worker o tempo aumentava ainda mais.
+See [paralle.py file](./src/prime/parallel.py) for more details.
 
-Resolvemos esta situação de overhead de comunicação enviando os dados por lote. Ou seja, ao invés de dizer que quero saber se o número X é primo, eu envio para o worker pedindo para calcular se os números de X até Y são primos.
+### Full report
+To access the full tests result, we can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
 
-### List of tests
+## What is next
+To finish, there are some aproaches and changes I could try in the future to improve the performance of the parallel code even more:
+- __Change the batch size__: I ran tests just using the batch value of 50. But, if I try changing this values, maybe the performance would be even better.
+- __Received data by collector__: The collector class received every single response from workers. So, if the until_number is 100,000, the collector would receive 100,000 responses from workers. However, the collector just need to know the prime numbers, so, if we change this logic to collector receive just the prime numbers, probably we'll have a lot of difference in the performance. This is because the quantity of exchange messages would be drastically reduced.
+- __Horizontal scaling__: The performance test was ran just in a single machine. It's a good idea to test it in a cluster of nodes. I thought probably the performance for few work (few numbers) would be worst that running in a single machine, however, maybe, using higher numbers the performance would be better.
 
-Adicionar aqui a lista completa dos tests.
-
-
-## Other things
-[Here](./cpp/CPP.md) you can see some example using C++.

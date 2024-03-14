@@ -30,8 +30,9 @@ class TestParallelManager(TestCase):
         manager = ParallelManager(comm = DummyMPIForManager(parameters))
         with raises(ValueError):
             manager.run(
-                until_number = 10  # it doesn't matter the number here 
-            )
+                until_number = 5,
+                batch_size = 50
+            )  # it doesn't matter the number here
 
     @mock.patch('src.prime.parallel.Emitter.start')
     def test_run_when_emitter(self, mock):
@@ -45,7 +46,10 @@ class TestParallelManager(TestCase):
         manager = ParallelManager(
             comm = DummyMPIForManager(parameters)
         )
-        manager.run(until_number = 5)  # it doesn't matter the number here
+        manager.run(
+            until_number = 5,
+            batch_size = 50
+        )  # it doesn't matter the number here
 
         # Then
         mock.assert_called_once()
@@ -64,7 +68,10 @@ class TestParallelManager(TestCase):
         manager = ParallelManager(
             comm = DummyMPIForManager(parameters)
         )
-        manager.run(until_number = 5)  # it doesn't matter the number here
+        manager.run(
+            until_number = 5,
+            batch_size = 50
+        )  # it doesn't matter the number here
 
         # Then
         mock.assert_called_once()
@@ -83,7 +90,10 @@ class TestParallelManager(TestCase):
         manager = ParallelManager(
             comm = DummyMPIForManager(parameters)
         )
-        manager.run(until_number = 5)  # it doesn't matter the number here
+        manager.run(
+            until_number = 5,
+            batch_size = 50
+        )  # it doesn't matter the number here
 
         # Then
         mock.assert_called_once()

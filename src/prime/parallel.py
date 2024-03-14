@@ -28,7 +28,7 @@ class ParallelManager:
         self.quantity_of_processes = self.comm.Get_size()
         self.me = self.comm.Get_rank()  # who am I?
 
-    def run(self, until_number: int, batch_size: int = 10):
+    def run(self, until_number: int, batch_size: int):
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ParallelManager.MIN_OF_PROCESSES:
                 raise ValueError(f'You must have at least {str(ParallelManager.MIN_OF_PROCESSES)} processes!')

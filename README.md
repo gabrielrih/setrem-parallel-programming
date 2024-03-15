@@ -10,6 +10,7 @@
     - [Running sequential code](#running-sequential-code)
 - [Performance tests](#performance-tests)
     - [Speedup](#speedup)
+    - [Throughput](#throughput)
     - [Communication overhead](#communication-overhead)
     - [Full report](#full-report)
 - [What is next](#what-is-next)
@@ -112,7 +113,7 @@ I ran performance tests using the sequential and the parallel mode. All the test
 In theory, if the process took 10 seconds to run in sequential mode, if you have two processes it would take half of that, which is 5 seconds; if you have three processes it would take one third of that, 3.3 seconds; and so one and so far. But, in real world it's not posible for many reasons. One of them is that not all of your code is parallel, there would always be some parts that will continue runinng sequentially. Other reasons could be hardware limitation, memory usage, networking and more.
 
 ### Speedup
-When you run a code sequentially, using a single vCore, it would take an amount of time to finish it. When you run your code in parallel, using two or more vCores, it would probably take a different amount of time. The division by this two times will generates the speedup ([click here for more details](https://en.wikipedia.org/wiki/Amdahl%27s_law)).
+When you run a code sequentially, using a single vCore, it would take an amount of time to finishs. When you run your code in parallel, using two or more vCores, it would probably takes a different amount of time. The division by this two times will generates the speedup ([click here for more details](https://en.wikipedia.org/wiki/Amdahl%27s_law)).
 
 $$ S = {T(1) \over T(N)} $$
 
@@ -125,23 +126,47 @@ The tests were divided into three categories and the same test in each category 
 - The second, until 50,000.
 - And the last one, until 100,000.
 
-Them, I calculate the average of time it took in each category and them I calculated the speedup in each category using this average time.
+Them, I calculate the average time it took in each category and them I calculated the speedup in each category using this average time.
 
-The final speedup was the average of speedup in all categories.
+The final speedup was the average of speedups in all categories.
 
 ![](.docs/img/speedup_graphic.png)
 
-As you can see in the graphic, when I used just a single worker, in fact the speedup was less than one. It means, using a single worker it is slower than running it in sequential mode. In fact, it was surprising for me, because I thought the division of work between emitter, collector and worker, would be enough to improve the performance. The reason of that probably is the comunication overhead and the complex code.
+As you can see in the graphic above, when I used just a single worker, in fact the speedup is less than one. It means, using a single worker the code is slower than running it in sequential mode. In fact, it was surprising for me, because I thought the division of work between emitter, collector and worker, would be enough to improve the performance. The reason of that probably is the comunication overhead and the complex code.
 
-However, from two workers the performance is improved by 24%. And using three workers the performance gets even better, 55%. This is really interesting because we are increasing the number of workers and the performance increases more and more. It would be also interesting to calculate the limitation of this approach, which means, what is the maximum of workers I can have where performance still increases? Note that probably in a certain number of workers the performance would not increase, so this is the maximum scalability you can have (more than that you would probably have to improve the code or scale horizontally).
+However, from two workers the performance is improved by 24%. And using three workers the performance gets even better, 55%. This is really interesting because we are increasing the number of workers and the performance increases more and more. It would be also interesting to calculate the limitation of this approach, which means, what is the maximum of workers I can have where performance still increases? Note that probably in a certain number of workers the performance would stabilize, so this is the maximum scalability you can have. More than that you would probably have to improve the code or scale horizontally.
+
+### Throughput
+
+Another interesting metric is throughput. 
+
+$$ T = {tasks \over time(seconds)} $$
+
+> The number os tasks in this case is how many numbers it can check if it's prime or not.
+
+The logic to check if a number is prime or not gets slower as the number gets bigger. For example, checking if then number 1,000 is prime is much faster than checking if 100,000 is prime. You can clearly see it in the table below.
+
+| Workers | Until number | Speedup (avg) | Throughput (avg) | Time it took (avg) |
+| :-----: | :----------: | :-----------: | :--------------: | :----------------: |
+| 2       | 30,000       | 1.2           | 7,141            | 4.3 seconds        |
+| 2       | 50,000       | 1.2           | 4,282            | 11.8 seconds       |
+| 2       | 100,000      | 1.5           | 2,524            | 39.8 seconds       |
+
+Note that although the speedup increased as the input number gets bigger, the throughput drastically reduced. It indicates that if you input a really big number, the algorithm "will continue running almost forever", getting slower and slower.
+
+However, comparing the throughput average when using more workers, the throughput increased.
+
+![](.docs/img/throughput.png)
+
+Probably there will be a limit, just like speedup, but I couldn't check it here because of hardware limitation.
 
 ### Communication overhead
-It's important also comment about communication overhead. The OpenMPI protocol has to establish communication between the processes (emitter, collector and workers). And obviously there is a cost to do that. The first version of the code, I was sending the data from emitter to worker one by one. Using this strategy the parallel code was 30% slower than the sequential mode even using three workers (5 vCores in total). To solve this, I changed this logic to send data in batches of 50 instead of sending one by one. It decrease the communication overhead in 50% and them the parallel code finally took some advantage comparing to the sequential one.
+It's also important to comment about communication overhead. The OpenMPI protocol has to establish communication between processes (emitter, collector and workers) and obviously there is a cost to do that. The first version of the code, I was sending the data from emitter to worker one by one. Using this strategy the parallel code was 30% slower than the sequential mode even using three workers (5 vCores in total). To solve this, I changed this logic to send data in batches of 50 instead of sending one by one. It decreased the communication overhead in 50% and them the parallel code finally took some advantage comparing to the sequential one.
 
 See [paralle.py file](./src/prime/parallel.py) for more details.
 
 ### Full report
-To access the full tests result, we can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
+To access the full tests report, you can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
 
 ## What is next
 To finish, there are some aproaches and changes I could try in the future to improve the performance of the parallel code even more:

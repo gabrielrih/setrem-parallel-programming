@@ -10,7 +10,6 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            //"args": "${command:pickArgs}"
             "args": "--mode sequential --until-number 100000"
         }
     ]

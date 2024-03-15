@@ -169,3 +169,5 @@ cython_debug/
 
 # Temporary excel
 ~$*.xlsx
+
+.DS_STORE

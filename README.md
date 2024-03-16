@@ -57,7 +57,7 @@ python app.py --mode sequential --until-number 1000
 
 > Where 1000 represents the max number to search for prime numbers.
 
-It's important to comment that to run this code in parallel mode I'm using [OpenMPI](https://www.open-mpi.org/). In case you are using Windows in your development environment, even if you will run this code in sequential mode, you must [install Microsoft MPI](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi). If you don't, a common error that may happen is:
+It's important to comment that to run this code in parallel mode I'm using [OpenMPI](https://www.open-mpi.org/). In case you are using Windows in your development environment, even if you run this code in sequential mode, you must [install Microsoft MPI](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi). If you don't, a common error that may happen is:
 ```
 ImportError: DLL load failed while importing MPI: Não foi possível encontrar o módulo especificado.
 ```
@@ -108,7 +108,7 @@ python app.py --mode sequential --until-number 10000
 
 ## Performance tests
 
-I ran performance tests using the sequential and the parallel mode. All the tests were performed on the __primary__ node in the testing environment previously created.
+I ran performance tests using the sequential and the parallel mode. All the tests were performed on the __primary__ node in the testing environment previously created (5 vCores and 1GB RAM).
 
 In theory, if the process took 10 seconds to run in sequential mode, if you have two processes it would take half of that, which is 5 seconds; if you have three processes it would take one third of that, 3.3 seconds; and so one and so far. But, in real world it's not posible for many reasons. One of them is that not all of your code is parallel, there would always be some parts that will continue runinng sequentially. Other reasons could be hardware limitation, memory usage, networking and more.
 
@@ -126,7 +126,7 @@ The tests were divided into three categories and the same test in each category 
 - The second, until 50,000.
 - And the last one, until 100,000.
 
-Them, I calculate the average time it took in each category and them I calculated the speedup in each category using this average time.
+Then, I calculate the average time it took in each category and them I calculated the speedup in each category using this average time.
 
 The final speedup was the average of speedups in all categories.
 
@@ -158,19 +158,19 @@ However, comparing the throughput average when using more workers, the throughpu
 
 ![](.docs/img/throughput.png)
 
-Probably there will be a limit, just like speedup, but I couldn't check it here because of hardware limitation.
+Probably there would be a limit, just like speedup, but I couldn't check it here because of hardware limitation.
 
 ### Communication overhead
-It's also important to comment about communication overhead. The OpenMPI protocol has to establish communication between processes (emitter, collector and workers) and obviously there is a cost to do that. The first version of the code, I was sending the data from emitter to worker one by one. Using this strategy the parallel code was 30% slower than the sequential mode even using three workers (5 vCores in total). To solve this, I changed this logic to send data in batches of 50 instead of sending one by one. It decreased the communication overhead in 50% and them the parallel code finally took some advantage comparing to the sequential one.
+It's also important to comment about communication overhead. The OpenMPI protocol has to establish communication between processes (emitter, collector and workers) and obviously there is a cost to do that. The first version of the code, I was sending the data from emitter to worker one by one. Using this strategy the parallel code was 30% slower than sequential mode even using three workers (5 vCores in total). To solve this, I changed this logic to send data in batches of 50 instead of sending one by one. It decreased the communication overhead in 50 times and then the parallel code finally took some advantage comparing to the sequential one.
 
 See [paralle.py file](./src/prime/parallel.py) for more details.
 
 ### Full report
-To access the full tests report, you can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
+To access the full test report, you can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
 
 ## What is next
 To finish, there are some aproaches and changes I could try in the future to improve the performance of the parallel code even more:
 - __Change the batch size__: I ran tests just using the batch value of 50. But, if I try changing this values, maybe the performance would be even better.
 - __Received data by collector__: The collector class received every single response from workers. So, if the until_number is 100,000, the collector would receive 100,000 responses from workers. However, the collector just need to know the prime numbers, so, if we change this logic to collector receive just the prime numbers, probably we'll have a lot of difference in the performance. This is because the quantity of exchange messages would be drastically reduced.
-- __Horizontal scaling__: The performance test was ran just in a single machine. It's a good idea to test it in a cluster of nodes. I thought probably the performance for few work (few numbers) would be worst that running in a single machine, however, maybe, using higher numbers the performance would be better.
+- __Horizontal scaling__: The performance test was ran just in a single machine. It's a good idea to test it in a cluster of nodes. Maybe, using higher numbers the performance would be better.
 

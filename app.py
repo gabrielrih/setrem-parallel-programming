@@ -22,13 +22,17 @@ logger = Logger.get_logger(__name__)
               default=50,
               required=False,
               help='Batch size to reduce communication overhead (just on parallel mode)')
+@click.option('--light-way',
+              type = click.BOOL,
+              default = False,
+              help = "When enabled the collector received just prime number")
 
 
-def run(mode: str, until_number: int, batch_size: int) -> None:
+def run(mode: str, until_number: int, batch_size: int, light_way: bool) -> None:
     if mode == 'sequential':
         SequentialManager().run(until_number)
         return
-    ParallelManager().run(until_number, batch_size)
+    ParallelManager().run(until_number, batch_size, light_way)
 
 
 if __name__ == '__main__':

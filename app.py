@@ -1,7 +1,7 @@
 import click
 
+from src.prime.parallel.manager import CompleteParallelManager, LightParallelManager
 from src.prime.sequential import SequentialManager
-from src.prime.parallel import ParallelManager
 from src.util.logger import Logger
 
 
@@ -10,7 +10,7 @@ logger = Logger.get_logger(__name__)
 
 @click.command()
 @click.option('--mode',
-              type=click.Choice(['sequential', 'parallel']),
+              type=click.Choice(['sequential', 'parallel', 'light_parallel']),
               required=True,
               help='Mode to run')
 @click.option('--until-number',
@@ -31,8 +31,10 @@ logger = Logger.get_logger(__name__)
 def run(mode: str, until_number: int, batch_size: int, light_way: bool) -> None:
     if mode == 'sequential':
         SequentialManager().run(until_number)
-        return
-    ParallelManager().run(until_number, batch_size, light_way)
+    elif mode == 'parallel':
+        CompleteParallelManager().run(until_number, batch_size)
+    elif mode == 'light_parallel':
+        LightParallelManager().run(until_number, batch_size)
 
 
 if __name__ == '__main__':

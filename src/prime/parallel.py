@@ -244,11 +244,15 @@ class LightWorker(Worker):
         logger.debug(f'Starting the worker {str(self.me)}')
         while True:
             # Receive and process data
-            data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receive data
+            data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receives data
             if data == Signals.END_SIGNAL.value:
+                logger.debug(f'Sending end_signal to collector')
+                self.comm.send(
+                    obj = Signals.END_SIGNAL.value,
+                    dest = Rank.COLLECTOR.value
+                )
                 break  # It's necessary to break the infinite loop
             from_number, to_number = self._emitter_serializer.deserialize(data)
-
             while from_number <= to_number:
                 is_prime = Worker.is_prime_number(number = from_number)
                 logger.debug(f'I am the worker {str(self.me)}. Is {str(from_number)} prime? {str(is_prime)}')
@@ -262,17 +266,10 @@ class LightWorker(Worker):
                     number = int(from_number),
                     is_prime = is_prime
                 )
-                #if req: req.wait()
                 self.comm.send(
                     obj = data,
                     dest = Rank.COLLECTOR.value  # target
                 )
                 from_number += 1
                 self.numbers_processed += 1
-        # Nothing more to do, it sends a message to the collector to stop processing
-        logger.debug(f'Sending end_signal to collector')
-        self.comm.send(
-            obj = Signals.END_SIGNAL.value,
-            dest = Rank.COLLECTOR.value
-        )
         logger.debug(f'Finishing the worker {str(self.me)}')

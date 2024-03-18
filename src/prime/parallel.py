@@ -160,8 +160,9 @@ class LightCollector(Collector):
             data = self.comm.recv(source = MPI.ANY_SOURCE)  # wait until receive data
             if data == Signals.END_SIGNAL.value:
                 received_end_signals += 1
-                if received_end_signals == number_of_workers:
-                    break  # It's necessary to break the infinite loop
+                if received_end_signals != number_of_workers:
+                    continue  # go back to while loop until it receives end signal from all workers
+                break  # It's necessary to break the infinite loop
             number, _ = self._serializer.deserialize(data)
             self.primer_numbers.append(number)
         logger.debug(f'The prime numbers are: {str(self.primer_numbers)}')

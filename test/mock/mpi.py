@@ -1,6 +1,6 @@
 from typing import Dict
 
-from src.prime.parallel import Rank, Signals
+from src.prime.parallel.common import Rank, Signals
 
 
 class DummyMPIForManager:

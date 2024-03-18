@@ -13,6 +13,7 @@
     - [Throughput](#throughput)
     - [Communication overhead](#communication-overhead)
     - [Full report](#full-report)
+- [Performance tests using light parallel mode](#performance-tests-using-light-parallel-mode)
 - [What is next](#what-is-next)
 
 ## Purpose
@@ -165,12 +166,32 @@ It's also important to comment about communication overhead. The OpenMPI protoco
 
 See [paralle.py file](./src/prime/parallel.py) for more details.
 
+## Performance tests using light parallel mode
+The tests ran above was performed sending all the results from the worker to the collector. However, for the purpose of this code, the collector need to know just the prime numbers. That way, I could simplify the logic to send data from worker to collector just when the number is prime. It reduced drastically the number of exchange messages between worker and collector. For example, if until_number is 100,000, in the normal parallel mode, there would be 100,000 messages sent from worker to collector. In the light parallel mode, just 9,592 messages would be sent to the collector.
+
+To use this light parallel mode, instead of run _--mode parallel_, just use _--mode light_parallel_.
+
+```sh
+mpirun -np 3 python app.py --mode light_parallel --until-number 10000
+```
+
+The performance result in this second approach is much better than the previous one. Remember that in the previous one, the speedup for just one worker was less than one, so even using three vCores, the parallel code was slower than the sequential one. Also remember that the maximum of improvement we had was 55% (using three workers).
+
+Now, using the light parallel mode, even using a single worker, the performance improvement was 28% (see the graphic below).
+
+![](.docs/img/speedup_graphic_for_light_mode.png)
+
+And then, using two workers, the performance improved 129% (which is amazing). However, it's interesting to note that using three workers the speedup was almost the same that using just two workers. It's important because it shows that probably we would have better performance adding more workers than two or three.
+
+You can see this same behavior in the throughput graphic:
+
+![](.docs/img/throughput_for_light_mode.png)
+
 ### Full report
 To access the full test report, you can look at [performance_tests.xlsx](./.docs/performance_test.xlsx).
 
 ## What is next
 To finish, there are some aproaches and changes I could try in the future to improve the performance of the parallel code even more:
 - __Change the batch size__: I ran tests just using the batch value of 50. But, if I try changing this values, maybe the performance would be even better.
-- __Received data by collector__: The collector class received every single response from workers. So, if the until_number is 100,000, the collector would receive 100,000 responses from workers. However, the collector just need to know the prime numbers, so, if we change this logic to collector receive just the prime numbers, probably we'll have a lot of difference in the performance. This is because the quantity of exchange messages would be drastically reduced.
 - __Horizontal scaling__: The performance test was ran just in a single machine. It's a good idea to test it in a cluster of nodes. Maybe, using higher numbers the performance would be better.
 

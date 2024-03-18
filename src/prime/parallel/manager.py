@@ -40,7 +40,7 @@ class CompleteParallelManager(ManagerModel):
 
 
 class LightParallelManager(ManagerModel):
-    def run(self, until_number: int, batch_size: int, light_way: bool):
+    def run(self, until_number: int, batch_size: int):
         if self.me == Rank.EMITTER.value:
             if self.quantity_of_processes < ManagerModel.MIN_OF_PROCESSES:
                 raise ValueError(f'You must have at least {str(ManagerModel.MIN_OF_PROCESSES)} processes!')

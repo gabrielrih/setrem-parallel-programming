@@ -1,0 +1,19 @@
+services:
+  app_sequential_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      python app.py --mode sequential --until-number 100
+  parallel_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      mpirun -np 3 --allow-run-as-root --use-hwthread-cpus python app.py --mode parallel --until-number 100
+  light_parallel_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      mpirun -np 3  --allow-run-as-root --use-hwthread-cpus python app.py --mode light_parallel --until-number 100

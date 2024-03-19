@@ -1,0 +1,8 @@
+FROM python:3.11.4-bullseye
+WORKDIR /app
+RUN apt update
+RUN apt-get install openmpi-bin openmpi-common libopenmpi-dev -y
+COPY ./requirements/common.txt ./requirements/
+RUN pip install --no-cache-dir -r ./requirements/common.txt
+COPY ./src src
+COPY ./app.py app.py

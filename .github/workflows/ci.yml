@@ -63,10 +63,28 @@ jobs:
         with:
           name: coverage.xml
           path: ./coverage.xml
+  integration_tests:
+    runs-on: ubuntu-latest
+    name: Integration tests
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Sequential mode testing
+        run: |
+          docker compose -f ./docker/compose-test.yml run app_sequential_mode
+      - name: Parallel mode testing
+        run: |
+          docker compose -f ./docker/compose-test.yml run parallel_mode
+      - name: Light Parallel mode testing
+        run: |
+          docker compose -f ./docker/compose-test.yml run light_parallel_mode
   security_scan:
     runs-on: ubuntu-latest
     name: Security scan
-    needs: [checks, unit_tests]
+    needs: [checks, unit_tests, integration_tests]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11

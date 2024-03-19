@@ -1,0 +1,7 @@
+services:
+  app_sequential_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      python app.py --mode sequential --until-number 100

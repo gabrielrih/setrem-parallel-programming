@@ -75,6 +75,12 @@ jobs:
       - name: Sequential mode test
         run: |
           docker compose -f ./docker/compose-test.yml run app_sequential_mode
+      - name: Parallel mode test
+        run: |
+          docker compose -f ./docker/compose-test.yml run parallel_mode
+      - name: Light Parallel mode test
+        run: |
+          docker compose -f ./docker/compose-test.yml run light_parallel_mode
   security_scan:
     runs-on: ubuntu-latest
     name: Security scan

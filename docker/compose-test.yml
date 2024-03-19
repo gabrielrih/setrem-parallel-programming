@@ -5,3 +5,15 @@ services:
       dockerfile: ./docker/Dockerfile.test
     command: |
       python app.py --mode sequential --until-number 100
+  parallel_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      mpirun -np 3 python app.py --mode parallel --until-number 100
+  light_parallel_mode:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.test
+    command: |
+      mpirun -np 3 python app.py --mode light_parallel --until-number 100

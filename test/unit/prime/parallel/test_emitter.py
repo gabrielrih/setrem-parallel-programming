@@ -13,3 +13,4 @@ class TestCompleteEmitter(TestCase):
             quantity_of_processes = 3,
             batch_size = 50)
         emitter.start(2)
+        self.assertEqual(emitter._workers_rank, [2])

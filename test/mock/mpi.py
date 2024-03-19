@@ -1,6 +1,6 @@
-from typing import Dict
+from typing import Dict, List
 
-from src.prime.parallel import Rank, Signals
+from src.prime.parallel.common import Rank
 
 
 class DummyMPIForManager:
@@ -32,13 +32,20 @@ class DummyMPIForEmitter:
 
 
 class DummyMPIForCollector:
+    def __init__(self, data_to_return: List):
+        self._data = data_to_return
+        self._returned_element = 0
+
     def recv(self, *args, **kwargs) -> str:
-        return '3:True'  # return always the same value
+        data = self._data[self._returned_element]
+        self._returned_element += 1
+        return data
 
 
 class DummyMPIForWorker:
-    def __init__(self):
-        self._received_messages = 0
+    def __init__(self, data_to_return = List):
+        self._data = data_to_return
+        self._returned_element = 0
 
     def send(self, *args, **kwargs):
         return None  # do nothing here
@@ -50,18 +57,6 @@ class DummyMPIForWorker:
         return None  # do nothing here
     
     def recv(self, *args, **kwargs) -> any:
-        # First message, simulating that the worker must calculate the range 2:12
-        if self._received_messages == 0:
-            self._received_messages += 1
-            return '2:12'
-        # Second message, simulating that the worker must calculate the range 13:23
-        if self._received_messages == 1:
-            self._received_messages += 1
-            return '13:23'
-        # Third message, simulating that the worker must calculate the range 13:23
-        if self._received_messages == 2:
-            self._received_messages += 1
-            return '24:30'
-        
-        # Last message, sending the end signal to stop doing the work
-        return Signals.END_SIGNAL.value
+        data = self._data[self._returned_element]
+        self._returned_element += 1
+        return data

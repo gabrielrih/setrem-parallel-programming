@@ -10,10 +10,10 @@ services:
       context: ../
       dockerfile: ./docker/Dockerfile.test
     command: |
-      mpirun -np 3 python app.py --mode parallel --until-number 100
+      mpirun -np 3 --allow-run-as-root python app.py --mode parallel --until-number 100
   light_parallel_mode:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.test
     command: |
-      mpirun -np 3 python app.py --mode light_parallel --until-number 100
+      mpirun -np 3 --allow-run-as-root python app.py --mode light_parallel --until-number 100

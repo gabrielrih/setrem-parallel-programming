@@ -89,7 +89,7 @@ class LightWorker(Worker):
             # Receive and process data
             data = self.comm.recv(source = Rank.EMITTER.value)  # wait until receives data
             if data == Signals.END_SIGNAL.value:
-                logger.debug(f'Sending end_signal to collector')
+                logger.debug('Sending end_signal to collector')
                 self.comm.send(
                     obj = Signals.END_SIGNAL.value,
                     dest = Rank.COLLECTOR.value
